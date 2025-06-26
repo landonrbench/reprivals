@@ -2,13 +2,13 @@
 
 ## Completed
 - [x] Generate Phoenix LiveView project "rep_rivals" with SQLite
-- [ ] Start server and create detailed plan
-- [ ] Replace home page with bold fitness-themed static mockup
-- [ ] Set up user authentication with mix phx.gen.auth
-- [ ] Create Workout schema and migration with required fields:
+- [x] Start server and create detailed plan
+- [x] Replace home page with bold fitness-themed static mockup
+- [x] Set up user authentication with mix phx.gen.auth
+- [x] Create Workout schema and migration with required fields:
   - id, user_id, name (defaults to YYYYMMDD), description, metric, timestamps
-- [ ] Seed database with sample workouts (Helen, Jackie, Filthy Fifty, Wittman)
-- [ ] Build WorkoutNotebookLive (main screen) with:
+- [x] Seed database with sample workouts (Helen, Jackie, Filthy Fifty, Wittman)
+- [x] Build WorkoutNotebookLive (main screen) with:
   - "Create New Workout" button at top
   - Scrollable workout list with name + description preview
   - Sorting controls (alphabetical, date created, date modified)
@@ -24,8 +24,8 @@
   - Save Changes button (conditional enabling)
   - Delete Workout button with confirmation modal
   - Display created/modified dates
-- [ ] Update router with authenticated routes (remove placeholder home route)
-- [ ] Style layouts for bold & energetic fitness theme:
+- [x] Update router with authenticated routes (remove placeholder home route)
+- [x] Style layouts for bold - [ ] Style layouts for bold & energetic fitness theme: energetic fitness theme:
   - Mobile-first responsive design
   - Bold colors, energetic typography
   - Clean spacing and intuitive tap targets
