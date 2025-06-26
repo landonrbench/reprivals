@@ -14,6 +14,7 @@ import Ecto.Query, warn: false
 alias RepRivals.Repo
 alias RepRivals.Accounts
 alias RepRivals.Library
+alias RepRivals.Accounts
 
 # Create a sample user if one doesn't exist
 {:ok, user} =
