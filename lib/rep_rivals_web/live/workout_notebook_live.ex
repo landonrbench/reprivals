@@ -54,7 +54,7 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
 
   @impl true
   def handle_info({:workout_updated, workout}, socket) do
-    {:noreply, stream_insert(:workouts, workout)}
+    {:noreply, stream_insert(socket, :workouts, workout)}
   end
 
   @impl true
