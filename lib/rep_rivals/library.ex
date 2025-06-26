@@ -8,6 +8,8 @@ defmodule RepRivals.Library do
 
   alias RepRivals.Library.Workout
 
+  alias __MODULE__.Workout
+
   @doc """
   Returns the list of workouts for a specific user.
 
