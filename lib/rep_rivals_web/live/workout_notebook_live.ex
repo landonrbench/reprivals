@@ -41,7 +41,7 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
 
   @impl true
   def handle_event("view_workout", %{"id" => id}, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/workouts/#{id}")}
+    {:noreply, push_navigate(socket, to: ~p"/workouts/#{id}/edit")}
   end
 
   @impl true
