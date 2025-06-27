@@ -46,19 +46,11 @@ defmodule RepRivalsWeb.HomeLive do
   @impl true
   def handle_event("view_workout", %{"id" => id}, socket) do
     {:noreply, push_navigate(socket, to: ~p"/workouts/#{id}")}
-    @impl true
+  end
 
-    @impl true
-    def handle_event("navigate_to_friends", _params, socket) do
-      @impl true
-      def handle_event("navigate_to_friends", _params, socket) do
-        {:noreply, push_navigate(socket, to: ~p"/friends")}
-      end
-
-      {:noreply, push_navigate(socket, to: ~p"/friends")}
-    end
-
-    {:noreply, push_navigate(socket, to: ~p"/workouts/#{id}")}
+  @impl true
+  def handle_event("navigate_to_friends", _params, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/friends")}
   end
 
   defp format_date(datetime) do
