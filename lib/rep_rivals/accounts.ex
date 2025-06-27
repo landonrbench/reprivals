@@ -157,12 +157,12 @@ defmodule RepRivals.Accounts do
     |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, [context]))
   end
 
-  @doc ~S"""
+  @doc """
   Delivers the update email instructions to the given user.
 
   ## Examples
 
-      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
+      iex> deliver_user_update_email_instructions(user, current_email, update_email_url_fun)
       {:ok, %{to: ..., body: ...}}
 
   """
@@ -180,7 +180,7 @@ defmodule RepRivals.Accounts do
   ## Examples
 
       iex> change_user_password(user)
-      %Ecto.ChangUser{}}
+      %Ecto.Changeset{}}
 
   """
   def change_user_password(user, attrs \\ %{}) do
@@ -228,7 +228,6 @@ defmodule RepRivals.Accounts do
 
   """
   def sudo_mode?(%User{authenticated_at: nil}), do: false
-  def sudo_mode?(%User{authenticated_at: nil}, _within_seconds), do: false
 
   def sudo_mode?(%User{authenticated_at: authenticated_at}) do
     sudo_mode?(%User{authenticated_at: authenticated_at}, -300)
@@ -305,22 +304,22 @@ defmodule RepRivals.Accounts do
   """
   def deliver_login_instructions(%User{} = user, login_url_fun)
       when is_function(login_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
+    {_encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
-    iex > deliver_login_instructions(user, login_url_fun)
+    UserNotifier.deliver_login_instructions(user, login_url_fun)
   end
 
   ## Confirmation
 
-  @doc ~S"""
+  @doc """
   Delivers the confirmation email instructions to the given user.
 
   ## Examples
 
-      iex> deliver_user_confirmation_instructions(user, &url(~p"/users/confirm/#{&1}"))
+      iex> deliver_user_confirmation_instructions(user, confirmation_url_fun)
       {:ok, %{to: ..., body: ...}}
 
-      iex> deliver_user_confirmation_instructions(confirmed_user, &url(~p"/users/confirm/#{&1}"))
+      iex> deliver_user_confirmation_instructions(confirmed_user, confirmation_url_fun)
       {:error, :already_confirmed}
 
   """
@@ -329,9 +328,9 @@ defmodule RepRivals.Accounts do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
-      {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
+      {_encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
       Repo.insert!(user_token)
-      iex > deliver_login_instructions(user, login_url_fun)
+      UserNotifier.deliver_login_instructions(user, confirmation_url_fun)
     end
   end
 
@@ -359,20 +358,20 @@ defmodule RepRivals.Accounts do
 
   ## Reset password
 
-  @doc ~S"""
+  @doc """
   Delivers the reset password email to the given user.
 
   ## Examples
 
-      iex> deliver_user_reset_password_instructions(user, &url(~p"/users/reset-password/#{&1}"))
+      iex> deliver_user_reset_password_instructions(user, reset_password_url_fun)
       {:ok, %{to: ..., body: ...}}
 
   """
   def deliver_user_reset_password_instructions(%User{} = user, reset_password_url_fun)
       when is_function(reset_password_url_fun, 1) do
-    {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
+    {_encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
-    iex > deliver_login_instructions(user, login_url_fun)
+    UserNotifier.deliver_login_instructions(user, reset_password_url_fun)
   end
 
   @doc """
