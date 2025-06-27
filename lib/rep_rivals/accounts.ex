@@ -299,7 +299,7 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}"))
+      iex> deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}")Routes.user_confirmation_url(conn, :edit, &url(~p"/users/log-in/#{&1}")1))
       {:ok, %{to: ..., body: ...}}
 
   """
