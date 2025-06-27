@@ -7,6 +7,7 @@ defmodule RepRivals.Library do
   alias RepRivals.Repo
 
   alias RepRivals.Library.Workout
+  alias RepRivals.Library.WorkoutResult
 
   @doc """
   Returns the list of workouts for a specific user.
@@ -142,5 +143,67 @@ defmodule RepRivals.Library do
   """
   def change_workout(%Workout{} = workout, attrs \\ %{}) do
     Workout.changeset(workout, attrs)
+  end
+
+  # Workout Results functions
+
+  @doc """
+  Returns the list of workout results for a specific workout, ordered by logged_at desc.
+
+  ## Examples
+
+      iex> list_workout_results(workout_id)
+      [%WorkoutResult{}, ...]
+
+  """
+  def list_workout_results(workout_id) do
+    WorkoutResult
+    |> where([wr], wr.workout_id == ^workout_id)
+    |> order_by([wr], desc: wr.logged_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Creates a workout result.
+
+  ## Examples
+
+      iex> create_workout_result(%{field: value})
+      {:ok, %WorkoutResult{}}
+
+      iex> create_workout_result(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_workout_result(attrs \\ %{}) do
+    case %WorkoutResult{}
+         |> WorkoutResult.changeset(attrs)
+         |> Repo.insert() do
+      {:ok, workout_result} ->
+        # Broadcast to all connected LiveViews for this workout
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workout_results:#{workout_result.workout_id}",
+          {:workout_result_created, workout_result}
+        )
+
+        {:ok, workout_result}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking workout result changes.
+
+  ## Examples
+
+      iex> change_workout_result(workout_result)
+      %Ecto.Changeset{}
+
+  """
+  def change_workout_result(%WorkoutResult{} = workout_result, attrs \\ %{}) do
+    WorkoutResult.changeset(workout_result, attrs)
   end
 end
