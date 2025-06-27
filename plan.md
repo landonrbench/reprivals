@@ -6,22 +6,23 @@
 - [x] Database seeded with demo user and sample workouts
 
 ## New Features to Build
-- [ ] Create New Workout LiveView (`/workouts/new`)
+- [x] Create New Workout LiveView (`/workouts/new`)
   - Form with name input (defaulted to current date YYYYMMDD)
   - Description textarea (required)
   - Metric dropdown (For Time, For Reps, Weight)
   - "Add Workout to Library" button (enabled when valid)
-- [ ] Edit Workout LiveView (`/workouts/:id/edit`)
+- [x] Edit Workout LiveView (`/workouts/:id/edit`)
   - Pre-populated form with existing workout data
   - Save Changes button
   - Delete Workout button with confirmation modal
   - Display created/modified timestamps
-- [ ] Update WorkoutNotebookLive
+- [x] Update WorkoutNotebookLive
   - Add "Create New Workout" button navigation
   - Make workout items clickable to edit
-- [ ] Router Updates
+- [x] Router Updates
   - Add new routes for create/edit workflows
-- [ ] Library Context Enhancements
+- [x] Library Context Enhancements
   - Add `update_workout/2` and `delete_workout/1` functions
   - Add `get_workout!/1` for fetching single workout
-- [ ] Test the complete workflow
+- [x] Test the complete workflow
+
