@@ -68,7 +68,7 @@ defmodule RepRivals.Library do
   def get_workout_with_results!(id) do
     Workout
     |> where([w], w.id == ^id)
-    |> preload(results: from(r in WorkoutResult, order_by: [desc: r.date, desc: r.inserted_at]))
+    |> preload(:results)
     |> Repo.one!()
   end
 
