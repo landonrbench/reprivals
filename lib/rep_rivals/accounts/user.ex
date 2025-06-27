@@ -107,9 +107,6 @@ defmodule RepRivals.Accounts.User do
   end
 
   @doc """
-  Confirms the account by setting `confirmed_at`.
-  """
-  @doc """
   A user changeset for registration.
 
   It is important to validate the length of both the email and password.
@@ -139,9 +136,25 @@ defmodule RepRivals.Accounts.User do
     |> validate_password(opts)
   end
 
+  @doc """
+  Confirms the account by setting `confirmed_at`.
+  """
   def confirm_changeset(user) do
     now = DateTime.utc_now(:second)
     change(user, confirmed_at: now)
+  end
+
+  @doc """
+  Validates the current password otherwise adds an error to the changeset.
+  """
+  def validate_current_password(changeset, password) do
+    changeset = cast(changeset, %{}, [])
+
+    if valid_password?(changeset.data, password) do
+      changeset
+    else
+      add_error(changeset, :current_password, "is not valid")
+    end
   end
 
   @doc """
