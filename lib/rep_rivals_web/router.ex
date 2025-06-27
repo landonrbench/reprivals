@@ -56,6 +56,7 @@ defmodule RepRivalsWeb.Router do
       live "/workouts/:id", WorkoutDetailLive, :show
       live "/workouts/:id/edit", WorkoutEditLive, :edit
       live "/friends", FriendsLive, :index
+      live "/challenges", ChallengesLive
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end
