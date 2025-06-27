@@ -27,7 +27,12 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
 
   @impl true
   def handle_event("show_log_form", _params, socket) do
-    changeset = Library.change_workout_result(%WorkoutResult{logged_at: DateTime.utc_now()})
+    # Set default date to today
+    today = Date.utc_today()
+
+    changeset =
+      Library.change_workout_result(%WorkoutResult{logged_at: DateTime.new!(today, ~T[12:00:00])})
+
     {:noreply, assign(socket, show_log_form: true, form: to_form(changeset))}
   end
 
@@ -41,11 +46,24 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
     workout = socket.assigns.workout
     user_id = socket.assigns.current_scope.user.id
 
+    # Parse the date and set it as the logged_at datetime
+    logged_at =
+      case result_params["logged_at"] do
+        date_string when is_binary(date_string) and date_string != "" ->
+          case Date.from_iso8601(date_string) do
+            {:ok, date} -> DateTime.new!(date, ~T[12:00:00])
+            _ -> DateTime.utc_now()
+          end
+
+        _ ->
+          DateTime.utc_now()
+      end
+
     result_params =
       result_params
       |> Map.put("workout_id", workout.id)
       |> Map.put("user_id", user_id)
-      |> Map.put("logged_at", DateTime.utc_now())
+      |> Map.put("logged_at", logged_at)
 
     case Library.create_workout_result(result_params) do
       {:ok, _workout_result} ->
