@@ -21,8 +21,12 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
      |> assign(:show_log_form, false)
      |> assign(:show_edit_modal, false)
      |> assign(:show_delete_modal, false)
+     |> assign(:show_edit_result_form, false)
+     |> assign(:show_delete_result_modal, false)
+     |> assign(:current_result, nil)
      |> assign(:form, to_form(Library.change_workout_result(%WorkoutResult{})))
-     |> assign(:edit_form, to_form(Library.change_workout(workout)))}
+     |> assign(:edit_form, to_form(Library.change_workout(workout)))
+     |> assign(:edit_result_form, to_form(Library.change_workout_result(%WorkoutResult{})))}
   end
 
   @impl true
@@ -74,6 +78,111 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
+    end
+  end
+
+  @impl true
+  def handle_event("edit_result", %{"id" => result_id}, socket) do
+    result = Enum.find(socket.assigns.workout_results, &(&1.id == String.to_integer(result_id)))
+
+    if result do
+      # Convert logged_at DateTime to date string for the form
+      date_string = result.logged_at |> DateTime.to_date() |> Date.to_string()
+
+      changeset =
+        result
+        |> Library.change_workout_result(%{logged_at: date_string})
+
+      {:noreply,
+       socket
+       |> assign(:current_result, result)
+       |> assign(:show_edit_result_form, true)
+       |> assign(:edit_result_form, to_form(changeset))}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("hide_edit_result_form", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_edit_result_form, false)
+     |> assign(:current_result, nil)}
+  end
+
+  @impl true
+  def handle_event("update_result", %{"workout_result" => result_params}, socket) do
+    current_result = socket.assigns.current_result
+
+    # Parse the date and set it as the logged_at datetime
+    logged_at =
+      case result_params["logged_at"] do
+        date_string when is_binary(date_string) and date_string != "" ->
+          case Date.from_iso8601(date_string) do
+            {:ok, date} -> DateTime.new!(date, ~T[12:00:00])
+            _ -> current_result.logged_at
+          end
+
+        _ ->
+          current_result.logged_at
+      end
+
+    result_params = Map.put(result_params, "logged_at", logged_at)
+
+    case Library.update_workout_result(current_result, result_params) do
+      {:ok, updated_result} ->
+        # Update the results list
+        updated_results =
+          Enum.map(socket.assigns.workout_results, fn result ->
+            if result.id == updated_result.id, do: updated_result, else: result
+          end)
+
+        {:noreply,
+         socket
+         |> assign(:workout_results, updated_results)
+         |> assign(:show_edit_result_form, false)
+         |> assign(:current_result, nil)
+         |> put_flash(:info, "Result updated successfully!")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, edit_result_form: to_form(changeset))}
+    end
+  end
+
+  @impl true
+  def handle_event("show_delete_result_modal", _params, socket) do
+    {:noreply, assign(socket, show_delete_result_modal: true)}
+  end
+
+  @impl true
+  def handle_event("hide_delete_result_modal", _params, socket) do
+    {:noreply, assign(socket, show_delete_result_modal: false)}
+  end
+
+  @impl true
+  def handle_event("delete_result", _params, socket) do
+    current_result = socket.assigns.current_result
+
+    case Library.delete_workout_result(current_result) do
+      {:ok, _deleted_result} ->
+        # Remove the result from the list
+        updated_results =
+          Enum.reject(socket.assigns.workout_results, &(&1.id == current_result.id))
+
+        {:noreply,
+         socket
+         |> assign(:workout_results, updated_results)
+         |> assign(:show_edit_result_form, false)
+         |> assign(:show_delete_result_modal, false)
+         |> assign(:current_result, nil)
+         |> put_flash(:info, "Result deleted successfully!")}
+
+      {:error, _changeset} ->
+        {:noreply,
+         socket
+         |> assign(:show_delete_result_modal, false)
+         |> put_flash(:error, "Failed to delete result")}
     end
   end
 
