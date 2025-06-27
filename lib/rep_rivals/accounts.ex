@@ -299,7 +299,7 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}")Routes.user_confirmation_url(conn, :edit, &url(~p"/users/log-in/#{&1}")1))
+      iex> deliver_login_instructions(user, login_url_fun)
       {:ok, %{to: ..., body: ...}}
 
   """
@@ -307,7 +307,7 @@ defmodule RepRivals.Accounts do
       when is_function(login_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
-    UserNotifier.deliver_login_instructions(user, login_url_fun.(encoded_token))
+    iex > deliver_login_instructions(user, login_url_fun)
   end
 
   ## Confirmation
@@ -331,7 +331,7 @@ defmodule RepRivals.Accounts do
     else
       {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
       Repo.insert!(user_token)
-      UserNotifier.deliver_login_instructions(user, confirmation_url_fun.(encoded_token))
+      iex > deliver_login_instructions(user, login_url_fun)
     end
   end
 
@@ -372,7 +372,7 @@ defmodule RepRivals.Accounts do
       when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
-    UserNotifier.deliver_login_instructions(user, reset_password_url_fun.(encoded_token))
+    iex > deliver_login_instructions(user, login_url_fun)
   end
 
   @doc """
