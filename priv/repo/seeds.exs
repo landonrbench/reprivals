@@ -16,17 +16,46 @@ alias RepRivals.Accounts
 alias RepRivals.Library
 alias RepRivals.Accounts
 
-# Create a sample user if one doesn't exist
-{:ok, user} =
+# Create a sample user if one doesn't exist with proper password
+demo_user =
   case Repo.get_by(RepRivals.Accounts.User, email: "demo@reprivals.com") do
     nil ->
-      Accounts.register_user(%{
-        email: "demo@reprivals.com",
-        password: "password123456"
-      })
+      # Create new user with password
+      {:ok, user} =
+        Accounts.register_user(%{
+          email: "demo@reprivals.com",
+          password: "password123456"
+        })
+
+      user
 
     user ->
-      {:ok, user}
+      # Update existing user with password if it's nil
+      if user.hashed_password == nil do
+        IO.puts("Fixing demo user password...")
+        # Update password using the current password (empty string for existing user)
+        case Accounts.update_user_password(user, "", %{password: "password123456"}) do
+          {:ok, updated_user} ->
+            IO.puts("Demo user password updated successfully")
+            updated_user
+
+          {:error, _changeset} ->
+            # If that fails, delete and recreate
+            IO.puts("Recreating demo user...")
+            Repo.delete(user)
+
+            {:ok, new_user} =
+              Accounts.register_user(%{
+                email: "demo@reprivals.com",
+                password: "password123456"
+              })
+
+            new_user
+        end
+      else
+        IO.puts("Demo user already has password")
+        user
+      end
   end
 
 # Create additional test users for friend functionality
@@ -54,47 +83,47 @@ Enum.each(test_users, fn user_attrs ->
   end
 end)
 
-# Create sample workouts
+# Create sample workouts for the demo user
 sample_workouts = [
   %{
     name: "HELEN",
     description: "3 rounds for time: 400m run, 21 kettlebell swings (53/35 lbs), 12 pull-ups",
     metric: "For Time",
-    user_id: user.id
+    user_id: demo_user.id
   },
   %{
     name: "JACKIE",
     description: "For time: 1000m row, 50 thrusters (45/35 lbs), 30 pull-ups",
     metric: "For Time",
-    user_id: user.id
+    user_id: demo_user.id
   },
   %{
     name: "FILTHY FIFTY",
     description:
       "50 reps each: box jumps (24/20), jumping pull-ups, kettlebell swings (35/26), walking lunges, knees-to-elbows, push press (45/35), back extensions, wall balls (20/14), burpees, double-unders",
     metric: "For Time",
-    user_id: user.id
+    user_id: demo_user.id
   },
   %{
     name: "WITTMAN",
     description:
       "7 rounds for time: 5 muscle-ups, 10 handstand push-ups, 15 kettlebell swings (70/53 lbs)",
     metric: "For Time",
-    user_id: user.id
+    user_id: demo_user.id
   },
   %{
     name: "MAX DEADLIFT",
     description:
       "Work up to 1RM deadlift. Start with warm-up sets, then gradually increase weight until you reach your maximum single rep.",
     metric: "Weight",
-    user_id: user.id
+    user_id: demo_user.id
   },
   %{
     name: "PULLUP LADDER",
     description:
       "Perform 1 pull-up, rest 10 seconds, 2 pull-ups, rest 20 seconds, 3 pull-ups, rest 30 seconds... continue until failure.",
     metric: "For Reps",
-    user_id: user.id
+    user_id: demo_user.id
   }
 ]
 
@@ -109,6 +138,8 @@ Enum.each(sample_workouts, fn workout_attrs ->
 end)
 
 IO.puts("Seeding complete!")
+IO.puts("\n=== Login Information ===")
+IO.puts("Demo user: demo@reprivals.com / password123456")
 IO.puts("\n=== Test Users Created ===")
 IO.puts("You can now test friend functionality with these emails:")
 IO.puts("- alice@example.com")
