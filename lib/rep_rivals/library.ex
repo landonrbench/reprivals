@@ -53,9 +53,22 @@ defmodule RepRivals.Library do
 
   """
   def create_workout(attrs \\ %{}) do
-    %Workout{}
-    |> Workout.changeset(attrs)
-    |> Repo.insert()
+    case %Workout{}
+         |> Workout.changeset(attrs)
+         |> Repo.insert() do
+      {:ok, workout} ->
+        # Broadcast to all connected LiveViews for this user
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workouts:#{workout.user_id}",
+          {:workout_created, workout}
+        )
+
+        {:ok, workout}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -71,9 +84,22 @@ defmodule RepRivals.Library do
 
   """
   def update_workout(%Workout{} = workout, attrs) do
-    workout
-    |> Workout.changeset(attrs)
-    |> Repo.update()
+    case workout
+         |> Workout.changeset(attrs)
+         |> Repo.update() do
+      {:ok, updated_workout} ->
+        # Broadcast to all connected LiveViews for this user
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workouts:#{updated_workout.user_id}",
+          {:workout_updated, updated_workout}
+        )
+
+        {:ok, updated_workout}
+
+      error ->
+        error
+    end
   end
 
   @doc """
@@ -89,7 +115,20 @@ defmodule RepRivals.Library do
 
   """
   def delete_workout(%Workout{} = workout) do
-    Repo.delete(workout)
+    case Repo.delete(workout) do
+      {:ok, deleted_workout} ->
+        # Broadcast to all connected LiveViews for this user
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workouts:#{deleted_workout.user_id}",
+          {:workout_deleted, deleted_workout}
+        )
+
+        {:ok, deleted_workout}
+
+      error ->
+        error
+    end
   end
 
   @doc """
