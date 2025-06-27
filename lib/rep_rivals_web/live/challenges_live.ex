@@ -3,6 +3,7 @@ defmodule RepRivalsWeb.ChallengesLive do
 
   alias RepRivals.Library
   alias RepRivals.Accounts
+  alias RepRivals.Repo
 
   @impl true
   def mount(_params, _session, socket) do
