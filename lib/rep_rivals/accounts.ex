@@ -162,7 +162,7 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1})")
+      iex> deliver_user_update_email_instructions(user, current_email, &url(~p"/users/settings/confirm-email/#{&1}"))
       {:ok, %{to: ..., body: ...}}
 
   """
@@ -215,6 +215,32 @@ defmodule RepRivals.Accounts do
     end
   end
 
+  @doc """
+  Checks if the user is in sudo mode (recently authenticated).
+
+  ## Examples
+
+      iex> sudo_mode?(user)
+      true
+
+      iex> sudo_mode?(user, -30)
+      false
+
+  """
+  def sudo_mode?(%User{authenticated_at: nil}), do: false
+  def sudo_mode?(%User{authenticated_at: nil}, _within_seconds), do: false
+
+  def sudo_mode?(%User{authenticated_at: authenticated_at}) do
+    sudo_mode?(%User{authenticated_at: authenticated_at}, -300)
+  end
+
+  def sudo_mode?(%User{authenticated_at: authenticated_at}, within_seconds) do
+    case authenticated_at do
+      nil -> false
+      datetime -> DateTime.diff(DateTime.utc_now(), datetime) <= abs(within_seconds)
+    end
+  end
+
   ## Session
 
   @doc """
@@ -238,7 +264,7 @@ defmodule RepRivals.Accounts do
   Deletes the signed token with the given context.
   """
   def delete_user_session_token(token) do
-    Repo.delete_all(UserToken.token_and_context_query(token, "session"))
+    Repo.delete_all(UserToken.by_token_and_context_query(token, "session"))
     :ok
   end
 
