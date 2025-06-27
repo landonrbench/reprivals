@@ -193,7 +193,7 @@ defmodule RepRivals.Accounts do
   ## Examples
 
       iex> update_user_password(user, "valid password", %{password: ...})
-      {:ok, %User{}}
+      {:ok, %User{}, [%UserToken{}]}
 
       iex> update_user_password(user, "invalid password", %{password: ...})
       {:error, %Ecto.Changeset{}}
@@ -207,10 +207,10 @@ defmodule RepRivals.Accounts do
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user, changeset)
-    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["password"]))
+    |> Ecto.Multi.delete_all(:tokens, UserToken.by_user_and_contexts_query(user, ["session"]))
     |> Repo.transaction()
     |> case do
-      {:ok, %{user: user}} -> {:ok, user}
+      {:ok, %{user: user, tokens: expired_tokens}} -> {:ok, user, expired_tokens}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
   end
@@ -268,6 +268,48 @@ defmodule RepRivals.Accounts do
     :ok
   end
 
+  ## Magic Link Login
+
+  @doc """
+  Logs in a user using a magic link token.
+
+  ## Examples
+
+      iex> login_user_by_magic_link(token)
+      {:ok, %User{}, [%UserToken{}]}
+
+      iex> login_user_by_magic_link(invalid_token)
+      :error
+
+  """
+  def login_user_by_magic_link(token) do
+    with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
+         {user, user_token} <- Repo.one(query) do
+      # Delete the magic link token and return expired session tokens
+      expired_tokens = Repo.all(UserToken.by_user_and_contexts_query(user, ["session"]))
+      Repo.delete(user_token)
+      {:ok, user, expired_tokens}
+    else
+      _ -> :error
+    end
+  end
+
+  @doc """
+  Delivers login instructions via magic link.
+
+  ## Examples
+
+      iex> deliver_login_instructions(user, &url(~p"/users/log-in/#{&1}"))
+      {:ok, %{to: ..., body: ...}}
+
+  """
+  def deliver_login_instructions(%User{} = user, login_url_fun)
+      when is_function(login_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
+    Repo.insert!(user_token)
+    UserNotifier.deliver_login_instructions(user, login_url_fun.(encoded_token))
+  end
+
   ## Confirmation
 
   @doc ~S"""
@@ -289,7 +331,7 @@ defmodule RepRivals.Accounts do
     else
       {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
       Repo.insert!(user_token)
-      UserNotifier.deliver_confirmation_instructions(user, confirmation_url_fun.(encoded_token))
+      UserNotifier.deliver_login_instructions(user, confirmation_url_fun.(encoded_token))
     end
   end
 
@@ -330,7 +372,7 @@ defmodule RepRivals.Accounts do
       when is_function(reset_password_url_fun, 1) do
     {encoded_token, user_token} = UserToken.build_email_token(user, "reset_password")
     Repo.insert!(user_token)
-    UserNotifier.deliver_reset_password_instructions(user, reset_password_url_fun.(encoded_token))
+    UserNotifier.deliver_login_instructions(user, reset_password_url_fun.(encoded_token))
   end
 
   @doc """
