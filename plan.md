@@ -1,41 +1,27 @@
-# RepRivals - Bold & Energetic Workout Notebook Plan
+# RepRivals - Workout CRUD Features Plan
 
-## Completed
-- [x] Generate Phoenix LiveView project "rep_rivals" with SQLite
-- [x] Start server and create detailed plan
-- [x] Replace home page with bold fitness-themed static mockup
-- [x] Set up user authentication with mix phx.gen.auth
-- [x] Create Workout schema and migration with required fields:
-  - id, user_id, name (defaults to YYYYMMDD), description, metric, timestamps
-- [x] Seed database with sample workouts (Helen, Jackie, Filthy Fifty, Wittman)
-- [x] Build WorkoutNotebookLive (main screen) with:
-  - "Create New Workout" button at top
-  - Scrollable workout list with name + description preview
-  - Sorting controls (alphabetical, date created, date modified)
-  - Real-time updates via PubSub
-- [ ] Build CreateWorkoutLive with:
-  - Name input (defaults to YYYYMMDD format)
+## Current Status
+- [x] Base app with authentication working
+- [x] WorkoutNotebookLive displaying existing workouts
+- [x] Database seeded with demo user and sample workouts
+
+## New Features to Build
+- [ ] Create New Workout LiveView (`/workouts/new`)
+  - Form with name input (defaulted to current date YYYYMMDD)
   - Description textarea (required)
-  - METRIC dropdown ("For Time", "For Reps", "Weight")
-  - "Add Workout to Library" button (conditional enabling)
-- [ ] Build ViewEditWorkoutLive with:
-  - Editable name and description fields
-  - METRIC dropdown pre-selected
-  - Save Changes button (conditional enabling)
+  - Metric dropdown (For Time, For Reps, Weight)
+  - "Add Workout to Library" button (enabled when valid)
+- [ ] Edit Workout LiveView (`/workouts/:id/edit`)
+  - Pre-populated form with existing workout data
+  - Save Changes button
   - Delete Workout button with confirmation modal
-  - Display created/modified dates
-- [x] Update router with authenticated routes (remove placeholder home route)
-- [x] Style layouts for bold - [ ] Style layouts for bold & energetic fitness theme: energetic fitness theme:
-  - Mobile-first responsive design
-  - Bold colors, energetic typography
-  - Clean spacing and intuitive tap targets
-- [ ] Implement confirmation modal for workout deletion
-- [ ] Add sorting functionality (alphabetical, date created, date modified)
-- [ ] Test complete user flow (auth → notebook → create → edit → delete)
-- [ ] Final verification and polish
-
-## Design Theme: Bold & Energetic Fitness Brand
-- High-contrast colors, bold typography
-- Mobile-first with large tap targets
-- Clean, motivating interface
-- Fitness brand vibes throughout
+  - Display created/modified timestamps
+- [ ] Update WorkoutNotebookLive
+  - Add "Create New Workout" button navigation
+  - Make workout items clickable to edit
+- [ ] Router Updates
+  - Add new routes for create/edit workflows
+- [ ] Library Context Enhancements
+  - Add `update_workout/2` and `delete_workout/1` functions
+  - Add `get_workout!/1` for fetching single workout
+- [ ] Test the complete workflow
