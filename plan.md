@@ -26,3 +26,13 @@
   - Add `get_workout!/1` for fetching single workout
 - [x] Test the complete workflow
 
+## New Workout Results Tracking Features
+- [x] Database: `workout_results` table with user_id, workout_id, result_value, notes, logged_at
+- [x] Schema: `WorkoutResult` with proper validations
+- [x] Context: Added workout result CRUD functions to Library
+- [x] LiveView: `WorkoutDetailLive` showing workout info, results history, and logging
+- [x] Dynamic "Log New [Metric]" button based on workout metric type
+- [x] Progress Chart: Canvas-based chart showing results over time
+- [x] Results History: Chronological list with dates, results, and notes
+- [x] Router: Updated workout clicks to go to detail page instead of edit
+
