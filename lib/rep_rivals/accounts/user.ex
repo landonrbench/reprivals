@@ -109,35 +109,35 @@ defmodule RepRivals.Accounts.User do
   @doc """
   Confirms the account by setting `confirmed_at`.
   """
-  @doc """\
-  A user changeset for registration.\
-\
-  It is important to validate the length of both the email and password.\
-  Otherwise databases may truncate the email without warnings, which\
-  could lead to unpredictable or insecure behavior. Long passwords may\
-  also be very expensive to hash for certain algorithms.\
-\
-  ## Options\
-\
-    * `:hash_password` - Hashes the password so it can be stored securely\
-      in the database and ensures the password field is cleared to prevent\
-      leaks in the logs. If password hashing is not needed and clearing the\
-      password field is not desired (like when using this changeset for\
-      validations on a LiveView form), this option can be set to `false`.\
-      Defaults to `true`.\
-\
-    * `:validate_email` - Validates the uniqueness of the email, in case\
-      you don't want to validate the uniqueness of the email (like when\
-      using this changeset for validations on a LiveView form before\
-      submitting the form), this option can be set to `false`.\
-      Defaults to `true`.\
-  """\
-  def registration_changeset(user, attrs, opts \\\\ []) do\
-    user\
-    |> cast(attrs, [:email, :password])\
-    |> validate_email(opts)\
-    |> validate_password(opts)\
-  end\
+  @doc """
+  A user changeset for registration.
+
+  It is important to validate the length of both the email and password.
+  Otherwise databases may truncate the email without warnings, which
+  could lead to unpredictable or insecure behavior. Long passwords may
+  also be very expensive to hash for certain algorithms.
+
+  ## Options
+
+    * `:hash_password` - Hashes the password so it can be stored securely
+      in the database and ensures the password field is cleared to prevent
+      leaks in the logs. If password hashing is not needed and clearing the
+      password field is not desired (like when using this changeset for
+      validations on a LiveView form), this option can be set to `false`.
+      Defaults to `true`.
+
+    * `:validate_email` - Validates the uniqueness of the email, in case
+      you don't want to validate the uniqueness of the email (like when
+      using this changeset for validations on a LiveView form before
+      submitting the form), this option can be set to `false`.
+      Defaults to `true`.
+  """
+  def registration_changeset(user, attrs, opts \\ []) do
+    user
+    |> cast(attrs, [:email, :password])
+    |> validate_email(opts)
+    |> validate_password(opts)
+  end
 
   def confirm_changeset(user) do
     now = DateTime.utc_now(:second)
