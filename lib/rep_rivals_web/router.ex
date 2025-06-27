@@ -50,7 +50,8 @@ defmodule RepRivalsWeb.Router do
 
     live_session :require_authenticated_user,
       on_mount: [{RepRivalsWeb.UserAuth, :require_authenticated}] do
-      live "/", WorkoutNotebookLive, :index
+      live "/", HomeLive, :index
+      live "/notebook", WorkoutNotebookLive, :index
       live "/workouts/new", WorkoutNewLive, :new
       live "/workouts/:id", WorkoutDetailLive, :show
       live "/workouts/:id/edit", WorkoutEditLive, :edit
