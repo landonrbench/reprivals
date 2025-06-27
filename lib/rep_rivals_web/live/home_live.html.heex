@@ -15,6 +15,18 @@
       </div>
     </div>
     
+<!-- Create New Workout Button -->
+    <div class="flex-none p-4 bg-gray-800 border-b-2 border-gray-700">
+      <div class="max-w-md mx-auto">
+        <button
+          phx-click="navigate_to_create"
+          class="w-full bg-orange-600 hover:bg-orange-700 py-4 rounded-lg font-black text-white text-lg uppercase tracking-wider transition-all"
+        >
+          ➕ Create New Workout
+        </button>
+      </div>
+    </div>
+    
 <!-- Stats Section -->
     <div class="flex-none p-4 bg-gray-800 border-b-2 border-gray-700">
       <div class="max-w-md mx-auto">
@@ -95,16 +107,6 @@
                 </div>
               </div>
             <% end %>
-          </div>
-          
-<!-- Quick Action -->
-          <div class="mt-6">
-            <button
-              phx-click="navigate_to_create"
-              class="w-full bg-orange-600 hover:bg-orange-700 py-4 rounded-lg font-black text-white text-lg uppercase tracking-wider transition-all"
-            >
-              ➕ Create New Workout
-            </button>
           </div>
         <% end %>
       </div>
