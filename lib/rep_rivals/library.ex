@@ -1,6 +1,6 @@
 defmodule RepRivals.Library do
   @moduledoc """
-  The Library context handles workout operations.
+  The Library context.
   """
 
   import Ecto.Query, warn: false
@@ -8,17 +8,32 @@ defmodule RepRivals.Library do
 
   alias RepRivals.Library.Workout
   alias RepRivals.Library.WorkoutResult
+  alias RepRivals.Library.Challenge
+  alias RepRivals.Library.ChallengeParticipant
+
+  @doc """
+  Returns the list of workouts.
+
+  ## Examples
+
+      iex> list_workouts()
+      [%Workout{}, ...]
+
+  """
+  def list_workouts do
+    Repo.all(Workout)
+  end
 
   @doc """
   Returns the list of workouts for a specific user.
 
   ## Examples
 
-      iex> list_workouts(user_id)
+      iex> list_workouts_for_user(user_id)
       [%Workout{}, ...]
 
   """
-  def list_workouts(user_id) do
+  def list_workouts_for_user(user_id) do
     Workout
     |> where([w], w.user_id == ^user_id)
     |> order_by([w], desc: w.inserted_at)
@@ -42,6 +57,22 @@ defmodule RepRivals.Library do
   def get_workout!(id), do: Repo.get!(Workout, id)
 
   @doc """
+  Gets a single workout with preloaded results.
+
+  ## Examples
+
+      iex> get_workout_with_results!(123)
+      %Workout{results: [%WorkoutResult{}, ...]}
+
+  """
+  def get_workout_with_results!(id) do
+    Workout
+    |> where([w], w.id == ^id)
+    |> preload(results: from(r in WorkoutResult, order_by: [desc: r.date, desc: r.inserted_at]))
+    |> Repo.one!()
+  end
+
+  @doc """
   Creates a workout.
 
   ## Examples
@@ -54,17 +85,14 @@ defmodule RepRivals.Library do
 
   """
   def create_workout(attrs \\ %{}) do
-    case %Workout{}
-         |> Workout.changeset(attrs)
-         |> Repo.insert() do
-      {:ok, workout} ->
-        # Broadcast to all connected LiveViews for this user
-        Phoenix.PubSub.broadcast(
-          RepRivals.PubSub,
-          "workouts:#{workout.user_id}",
-          {:workout_created, workout}
-        )
+    result =
+      %Workout{}
+      |> Workout.changeset(attrs)
+      |> Repo.insert()
 
+    case result do
+      {:ok, workout} ->
+        Phoenix.PubSub.broadcast(RepRivals.PubSub, "workouts", {:workout_created, workout})
         {:ok, workout}
 
       error ->
@@ -85,14 +113,16 @@ defmodule RepRivals.Library do
 
   """
   def update_workout(%Workout{} = workout, attrs) do
-    case workout
-         |> Workout.changeset(attrs)
-         |> Repo.update() do
+    result =
+      workout
+      |> Workout.changeset(attrs)
+      |> Repo.update()
+
+    case result do
       {:ok, updated_workout} ->
-        # Broadcast to all connected LiveViews for this user
         Phoenix.PubSub.broadcast(
           RepRivals.PubSub,
-          "workouts:#{updated_workout.user_id}",
+          "workouts",
           {:workout_updated, updated_workout}
         )
 
@@ -116,12 +146,13 @@ defmodule RepRivals.Library do
 
   """
   def delete_workout(%Workout{} = workout) do
-    case Repo.delete(workout) do
+    result = Repo.delete(workout)
+
+    case result do
       {:ok, deleted_workout} ->
-        # Broadcast to all connected LiveViews for this user
         Phoenix.PubSub.broadcast(
           RepRivals.PubSub,
-          "workouts:#{deleted_workout.user_id}",
+          "workouts",
           {:workout_deleted, deleted_workout}
         )
 
@@ -145,10 +176,8 @@ defmodule RepRivals.Library do
     Workout.changeset(workout, attrs)
   end
 
-  # Workout Results functions
-
   @doc """
-  Returns the list of workout results for a specific workout, ordered by logged_at desc.
+  Returns the list of workout_results for a specific workout.
 
   ## Examples
 
@@ -159,12 +188,28 @@ defmodule RepRivals.Library do
   def list_workout_results(workout_id) do
     WorkoutResult
     |> where([wr], wr.workout_id == ^workout_id)
-    |> order_by([wr], desc: wr.logged_at)
+    |> order_by([wr], desc: wr.date, desc: wr.inserted_at)
     |> Repo.all()
   end
 
   @doc """
-  Creates a workout result.
+  Gets a single workout_result.
+
+  Raises `Ecto.NoResultsError` if the Workout result does not exist.
+
+  ## Examples
+
+      iex> get_workout_result!(123)
+      %WorkoutResult{}
+
+      iex> get_workout_result!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_workout_result!(id), do: Repo.get!(WorkoutResult, id)
+
+  @doc """
+  Creates a workout_result.
 
   ## Examples
 
@@ -176,15 +221,17 @@ defmodule RepRivals.Library do
 
   """
   def create_workout_result(attrs \\ %{}) do
-    case %WorkoutResult{}
-         |> WorkoutResult.changeset(attrs)
-         |> Repo.insert() do
+    result =
+      %WorkoutResult{}
+      |> WorkoutResult.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
       {:ok, workout_result} ->
-        # Broadcast to all connected LiveViews for this workout
         Phoenix.PubSub.broadcast(
           RepRivals.PubSub,
-          "workout_results:#{workout_result.workout_id}",
-          {:workout_result_created, workout_result}
+          "workout_results",
+          {:result_created, workout_result}
         )
 
         {:ok, workout_result}
@@ -195,7 +242,7 @@ defmodule RepRivals.Library do
   end
 
   @doc """
-  Updates a workout result.
+  Updates a workout_result.
 
   ## Examples
 
@@ -207,15 +254,17 @@ defmodule RepRivals.Library do
 
   """
   def update_workout_result(%WorkoutResult{} = workout_result, attrs) do
-    case workout_result
-         |> WorkoutResult.changeset(attrs)
-         |> Repo.update() do
+    result =
+      workout_result
+      |> WorkoutResult.changeset(attrs)
+      |> Repo.update()
+
+    case result do
       {:ok, updated_result} ->
-        # Broadcast to all connected LiveViews for this workout
         Phoenix.PubSub.broadcast(
           RepRivals.PubSub,
-          "workout_results:#{updated_result.workout_id}",
-          {:workout_result_updated, updated_result}
+          "workout_results",
+          {:result_updated, updated_result}
         )
 
         {:ok, updated_result}
@@ -226,7 +275,7 @@ defmodule RepRivals.Library do
   end
 
   @doc """
-  Deletes a workout result.
+  Deletes a workout_result.
 
   ## Examples
 
@@ -238,13 +287,14 @@ defmodule RepRivals.Library do
 
   """
   def delete_workout_result(%WorkoutResult{} = workout_result) do
-    case Repo.delete(workout_result) do
+    result = Repo.delete(workout_result)
+
+    case result do
       {:ok, deleted_result} ->
-        # Broadcast to all connected LiveViews for this workout
         Phoenix.PubSub.broadcast(
           RepRivals.PubSub,
-          "workout_results:#{deleted_result.workout_id}",
-          {:workout_result_deleted, deleted_result}
+          "workout_results",
+          {:result_deleted, deleted_result}
         )
 
         {:ok, deleted_result}
@@ -255,15 +305,215 @@ defmodule RepRivals.Library do
   end
 
   @doc """
-  Returns an `%Ecto.Changeset{}` for tracking workout result changes.
+  Returns an `%Ecto.Changeset{}` for tracking workout_result changes.
 
   ## Examples
 
       iex> change_workout_result(workout_result)
-      %Ecto.Changeset{}
+      %Ecto.Changeset{data: %WorkoutResult{}}
 
   """
   def change_workout_result(%WorkoutResult{} = workout_result, attrs \\ %{}) do
     WorkoutResult.changeset(workout_result, attrs)
+  end
+
+  ## Challenge functions
+
+  @doc """
+  Returns the list of challenges for a specific user (created by them).
+
+  ## Examples
+
+      iex> list_challenges_for_user(user_id)
+      [%Challenge{}, ...]
+
+  """
+  def list_challenges_for_user(user_id) do
+    Challenge
+    |> where([c], c.creator_id == ^user_id)
+    |> preload([:workout, :creator, participants: [:user]])
+    |> order_by([c], desc: c.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns the list of challenge invites for a specific user (challenges they were invited to).
+
+  ## Examples
+
+      iex> list_challenge_invites_for_user(user_id)
+      [%ChallengeParticipant{}, ...]
+
+  """
+  def list_challenge_invites_for_user(user_id) do
+    ChallengeParticipant
+    |> where([cp], cp.user_id == ^user_id)
+    |> preload(challenge: [:workout, :creator, participants: [:user]])
+    |> order_by([cp], desc: cp.inserted_at)
+    |> Repo.all()
+  end
+
+  @doc """
+  Gets challenge invites that are unviewed for a user (for notification badge).
+
+  ## Examples
+
+      iex> get_unviewed_challenge_count(user_id)
+      3
+
+  """
+  def get_unviewed_challenge_count(user_id) do
+    ChallengeParticipant
+    |> where([cp], cp.user_id == ^user_id and is_nil(cp.viewed_at))
+    |> Repo.aggregate(:count, :id)
+  end
+
+  @doc """
+  Gets a single challenge with all participants.
+
+  ## Examples
+
+      iex> get_challenge_with_participants!(123)
+      %Challenge{participants: [%ChallengeParticipant{}, ...]}
+
+  """
+  def get_challenge_with_participants!(id) do
+    Challenge
+    |> where([c], c.id == ^id)
+    |> preload([:workout, :creator, participants: [:user]])
+    |> Repo.one!()
+  end
+
+  @doc """
+  Creates a challenge.
+
+  ## Examples
+
+      iex> create_challenge(%{field: value})
+      {:ok, %Challenge{}}
+
+      iex> create_challenge(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_challenge(attrs \\ %{}) do
+    result =
+      %Challenge{}
+      |> Challenge.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, challenge} ->
+        Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenges", {:challenge_created, challenge})
+        {:ok, challenge}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Creates challenge participants for a list of user IDs.
+
+  ## Examples
+
+      iex> create_challenge_participants(challenge_id, [1, 2, 3])
+      {:ok, [%ChallengeParticipant{}, ...]}
+
+  """
+  def create_challenge_participants(challenge_id, user_ids) do
+    participants =
+      Enum.map(user_ids, fn user_id ->
+        %{
+          challenge_id: challenge_id,
+          user_id: user_id,
+          status: "invited",
+          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
+          updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+        }
+      end)
+
+    case Repo.insert_all(ChallengeParticipant, participants, returning: true) do
+      {_count, participants} ->
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "challenges",
+          {:participants_invited, participants}
+        )
+
+        {:ok, participants}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Updates a challenge participant (accept/decline/complete).
+
+  ## Examples
+
+      iex> update_challenge_participant(participant, %{status: "accepted"})
+      {:ok, %ChallengeParticipant{}}
+
+  """
+  def update_challenge_participant(%ChallengeParticipant{} = participant, attrs) do
+    result =
+      participant
+      |> ChallengeParticipant.changeset(attrs)
+      |> Repo.update()
+
+    case result do
+      {:ok, updated_participant} ->
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "challenges",
+          {:participant_updated, updated_participant}
+        )
+
+        {:ok, updated_participant}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Mark challenge invite as viewed (removes from notification count).
+
+  ## Examples
+
+      iex> mark_challenge_viewed(participant)
+      {:ok, %ChallengeParticipant{}}
+
+  """
+  def mark_challenge_viewed(%ChallengeParticipant{} = participant) do
+    update_challenge_participant(participant, %{viewed_at: NaiveDateTime.utc_now()})
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking challenge changes.
+
+  ## Examples
+
+      iex> change_challenge(challenge)
+      %Ecto.ChangChallenge{}}
+
+  """
+  def change_challenge(%Challenge{} = challenge, attrs \\ %{}) do
+    Challenge.changeset(challenge, attrs)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking challenge participant changes.
+
+  ## Examples
+
+      iex> change_challenge_participant(participant)
+      %Ecto.Changeset{lengeParticipant{}}
+
+  """
+  def change_challenge_participant(%ChallengeParticipant{} = participant, attrs \\ %{}) do
+    ChallengeParticipant.changeset(participant, attrs)
   end
 end
