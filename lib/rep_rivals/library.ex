@@ -195,6 +195,66 @@ defmodule RepRivals.Library do
   end
 
   @doc """
+  Updates a workout result.
+
+  ## Examples
+
+      iex> update_workout_result(workout_result, %{field: new_value})
+      {:ok, %WorkoutResult{}}
+
+      iex> update_workout_result(workout_result, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_workout_result(%WorkoutResult{} = workout_result, attrs) do
+    case workout_result
+         |> WorkoutResult.changeset(attrs)
+         |> Repo.update() do
+      {:ok, updated_result} ->
+        # Broadcast to all connected LiveViews for this workout
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workout_results:#{updated_result.workout_id}",
+          {:workout_result_updated, updated_result}
+        )
+
+        {:ok, updated_result}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
+  Deletes a workout result.
+
+  ## Examples
+
+      iex> delete_workout_result(workout_result)
+      {:ok, %WorkoutResult{}}
+
+      iex> delete_workout_result(workout_result)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_workout_result(%WorkoutResult{} = workout_result) do
+    case Repo.delete(workout_result) do
+      {:ok, deleted_result} ->
+        # Broadcast to all connected LiveViews for this workout
+        Phoenix.PubSub.broadcast(
+          RepRivals.PubSub,
+          "workout_results:#{deleted_result.workout_id}",
+          {:workout_result_deleted, deleted_result}
+        )
+
+        {:ok, deleted_result}
+
+      error ->
+        error
+    end
+  end
+
+  @doc """
   Returns an `%Ecto.Changeset{}` for tracking workout result changes.
 
   ## Examples
