@@ -29,6 +29,31 @@ alias RepRivals.Accounts
       {:ok, user}
   end
 
+# Create additional test users for friend functionality
+test_users = [
+  %{email: "alice@example.com", password: "password123456"},
+  %{email: "bob@example.com", password: "password123456"},
+  %{email: "charlie@example.com", password: "password123456"},
+  %{email: "diana@example.com", password: "password123456"},
+  %{email: "eve@example.com", password: "password123456"}
+]
+
+Enum.each(test_users, fn user_attrs ->
+  case Repo.get_by(RepRivals.Accounts.User, email: user_attrs.email) do
+    nil ->
+      case Accounts.register_user(user_attrs) do
+        {:ok, new_user} ->
+          IO.puts("Created test user: #{new_user.email}")
+
+        {:error, changeset} ->
+          IO.puts("Failed to create user #{user_attrs.email}: #{inspect(changeset.errors)}")
+      end
+
+    _existing_user ->
+      IO.puts("Test user already exists: #{user_attrs.email}")
+  end
+end)
+
 # Create sample workouts
 sample_workouts = [
   %{
@@ -84,3 +109,11 @@ Enum.each(sample_workouts, fn workout_attrs ->
 end)
 
 IO.puts("Seeding complete!")
+IO.puts("\n=== Test Users Created ===")
+IO.puts("You can now test friend functionality with these emails:")
+IO.puts("- alice@example.com")
+IO.puts("- bob@example.com")
+IO.puts("- charlie@example.com")
+IO.puts("- diana@example.com")
+IO.puts("- eve@example.com")
+IO.puts("All passwords: password123456")
