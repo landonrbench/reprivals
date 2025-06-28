@@ -21,6 +21,9 @@ defmodule RepRivalsWeb.ChallengesLive do
       end
     end)
 
+    # Get workouts for the create modal
+    workouts = Library.list_workouts_for_user(user_id)
+
     socket =
       socket
       |> assign(:my_challenges, my_challenges)
@@ -31,6 +34,7 @@ defmodule RepRivalsWeb.ChallengesLive do
       |> assign(:selected_workout, nil)
       |> assign(:selected_friends, [])
       |> assign(:challenge_form, to_form(%{}))
+      |> assign(:workouts, workouts)
 
     {:ok, socket}
   end
