@@ -104,13 +104,13 @@ defmodule RepRivalsWeb.ChallengesLive do
       }
 
       case Library.create_challenge(challenge_attrs) do
-        IO.puts("DEBUG: Challenge creation successful, challenge ID: #{challenge.id}")
-        IO.puts("DEBUG: Selected friends for participants: #{inspect(selected_friends)}")
         {:ok, challenge} ->
-          # Add participants
+          IO.puts("DEBUG: Challenge creation successful, challenge ID: #{challenge.id}")
+          IO.puts("DEBUG: Selected friends for participants: #{inspect(selected_friends)}")
+
           case Library.create_challenge_participants(challenge.id, selected_friends) do
-          IO.puts("DEBUG: Participants created successfully: #{inspect(participants)}")
             {:ok, _participants} ->
+              IO.puts("DEBUG: Participants created successfully")
               # Refresh data
               my_challenges = Library.list_challenges_for_user(user_id)
 
@@ -123,13 +123,13 @@ defmodule RepRivalsWeb.ChallengesLive do
                |> assign(:challenge_form, to_form(%{}))
                |> put_flash(:info, "Challenge created successfully!")}
 
-        IO.puts("DEBUG: Failed to create participants, error: #{inspect(_error)}")
             {:error, _error} ->
+              IO.puts("DEBUG: Failed to create participants")
               {:noreply, put_flash(socket, :error, "Failed to invite participants")}
           end
 
-      IO.puts("DEBUG: Failed to create challenge, changeset: #{inspect(_changeset)}")
         {:error, _changeset} ->
+          IO.puts("DEBUG: Failed to create challenge")
           {:noreply, put_flash(socket, :error, "Failed to create challenge")}
       end
     else
@@ -151,8 +151,8 @@ defmodule RepRivalsWeb.ChallengesLive do
          |> assign(:challenge_invites, challenge_invites)
          |> put_flash(:info, "Challenge accepted!")}
 
-      IO.puts("DEBUG: Failed to create challenge, changeset: #{inspect(_changeset)}")
       {:error, _changeset} ->
+        IO.puts("DEBUG: Failed to accept challenge")
         {:noreply, put_flash(socket, :error, "Failed to accept challenge")}
     end
   end
@@ -171,8 +171,8 @@ defmodule RepRivalsWeb.ChallengesLive do
          |> assign(:challenge_invites, challenge_invites)
          |> put_flash(:info, "Challenge declined")}
 
-      IO.puts("DEBUG: Failed to create challenge, changeset: #{inspect(_changeset)}")
       {:error, _changeset} ->
+        IO.puts("DEBUG: Failed to decline challenge")
         {:noreply, put_flash(socket, :error, "Failed to decline challenge")}
     end
   end
