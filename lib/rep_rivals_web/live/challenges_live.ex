@@ -42,6 +42,7 @@ defmodule RepRivalsWeb.ChallengesLive do
 
   @impl true
   def handle_event("show_create_modal", _params, socket) do
+    IO.puts("DEBUG: show_create_modal event received")
     user_id = socket.assigns.current_scope.user.id
     workouts = Library.list_workouts_for_user(user_id)
 
