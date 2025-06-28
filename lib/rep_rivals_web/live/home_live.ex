@@ -189,7 +189,7 @@ defmodule RepRivalsWeb.HomeLive do
   end
 
   defp get_workout_summary(workout) do
-    case workout.primary_metric do
+    case workout.metric do
       "time" -> "For Time"
       "reps" -> "For Reps"
       "weight" -> "For Load"
