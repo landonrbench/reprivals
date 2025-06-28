@@ -248,7 +248,7 @@
                       >
                         <div class="font-medium text-white">{workout.name}</div>
                         <div class="text-sm text-gray-400">
-                          {case workout.primary_metric do
+                          {case workout.metric do
                             "time" -> "For Time"
                             "reps" -> "For Reps"
                             "weight" -> "For Load"
@@ -267,7 +267,7 @@
                   <div class="bg-gray-700 rounded-lg p-3 mb-4">
                     <div class="font-medium text-white">{@selected_workout.name}</div>
                     <div class="text-sm text-gray-400">
-                      {case @selected_workout.primary_metric do
+                      {case @selected_workout.metric do
                         "time" -> "For Time"
                         "reps" -> "For Reps"
                         "weight" -> "For Load"
