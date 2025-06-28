@@ -200,7 +200,7 @@ defmodule RepRivalsWeb.HomeLive do
 
   defp get_current_week do
     now = NaiveDateTime.utc_now()
-    days_since_monday = NaiveDateTime.day_of_week(now) - 1
+    days_since_monday = Date.day_of_week(NaiveDateTime.to_date(now)) - 1
     week_start = NaiveDateTime.add(now, -days_since_monday * 24 * 60 * 60, :second)
     week_end = NaiveDateTime.add(week_start, 6 * 24 * 60 * 60, :second)
     {week_start, week_end}
