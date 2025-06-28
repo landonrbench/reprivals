@@ -188,7 +188,7 @@ defmodule RepRivals.Library do
   def list_workout_results(workout_id) do
     WorkoutResult
     |> where([wr], wr.workout_id == ^workout_id)
-    |> order_by([wr], desc: wr.date, desc: wr.inserted_at)
+    |> order_by([wr], desc: wr.logged_at, desc: wr.inserted_at)
     |> Repo.all()
   end
 
