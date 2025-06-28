@@ -12,7 +12,7 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
       )
     end
 
-    workouts = Library.list_workouts(socket.assigns.current_scope.user.id)
+    workouts = Library.list_workouts_for_user(socket.assigns.current_scope.user.id)
 
     {:ok,
      socket
@@ -62,7 +62,7 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
     updated_socket = stream_delete(socket, :workouts, workout)
 
     # Check if workouts list is now empty
-    remaining_workouts = Library.list_workouts(socket.assigns.current_scope.user.id)
+    remaining_workouts = Library.list_workouts_for_user(socket.assigns.current_scope.user.id)
 
     {:noreply,
      updated_socket
@@ -72,19 +72,19 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
   defp get_sorted_workouts(user_id, sort_by) do
     case sort_by do
       "alphabetical" ->
-        Library.list_workouts(user_id)
+        Library.list_workouts_for_user(user_id)
         |> Enum.sort_by(& &1.name, :asc)
 
       "date_created" ->
-        Library.list_workouts(user_id)
+        Library.list_workouts_for_user(user_id)
         |> Enum.sort_by(& &1.inserted_at, {:desc, DateTime})
 
       "date_modified" ->
-        Library.list_workouts(user_id)
+        Library.list_workouts_for_user(user_id)
         |> Enum.sort_by(& &1.updated_at, {:desc, DateTime})
 
       _default ->
-        Library.list_workouts(user_id)
+        Library.list_workouts_for_user(user_id)
     end
   end
 
