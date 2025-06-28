@@ -88,7 +88,7 @@ defmodule RepRivalsWeb.ChallengesLive do
   end
 
   @impl true
-  def handle_event("create_challenge", %{"challenge" => challenge_params}, socket) do
+  def handle_event("create_challenge", challenge_params, socket) do
     user_id = socket.assigns.current_scope.user.id
     selected_workout = socket.assigns.selected_workout
     selected_friends = socket.assigns.selected_friends
