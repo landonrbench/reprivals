@@ -109,8 +109,8 @@ defmodule RepRivalsWeb.ChallengesLive do
           IO.puts("DEBUG: Selected friends for participants: #{inspect(selected_friends)}")
 
           case Library.create_challenge_participants(challenge.id, selected_friends) do
-            {:ok, _participants} ->
-              IO.puts("DEBUG: Participants created successfully")
+            {:ok, participants} ->
+              IO.puts("DEBUG: Participants created successfully: #{inspect(participants)}")
               # Refresh data
               my_challenges = Library.list_challenges_for_user(user_id)
 
@@ -123,13 +123,13 @@ defmodule RepRivalsWeb.ChallengesLive do
                |> assign(:challenge_form, to_form(%{}))
                |> put_flash(:info, "Challenge created successfully!")}
 
-            {:error, _error} ->
-              IO.puts("DEBUG: Failed to create participants")
+            {:error, error} ->
+              IO.puts("DEBUG: Failed to create participants, error: #{inspect(error)}")
               {:noreply, put_flash(socket, :error, "Failed to invite participants")}
           end
 
-        {:error, _changeset} ->
-          IO.puts("DEBUG: Failed to create challenge")
+        {:error, changeset} ->
+          IO.puts("DEBUG: Failed to create challenge, changeset: #{inspect(changeset)}")
           {:noreply, put_flash(socket, :error, "Failed to create challenge")}
       end
     else
