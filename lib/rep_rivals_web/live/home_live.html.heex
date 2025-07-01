@@ -1,152 +1,104 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="min-h-screen bg-gray-900 text-white flex flex-col">
-    <!-- Welcome Header -->
-    <div class="flex-none p-4 bg-gray-800 border-b-4 border-orange-500">
-      <div class="max-w-md mx-auto text-center">
-        <h1 class="text-2xl font-black text-orange-400 mb-2 tracking-wide uppercase">
-          🏋️ RepRivals Dashboard
-        </h1>
-        <p class="text-gray-300 text-sm">
-          Welcome back,
-          <span class="text-orange-400 font-bold">
-            {@current_scope.user.email |> String.split("@") |> hd() |> String.upcase()}
+  <div class="min-h-screen bg-gray-900 text-white pb-20">
+    <!-- Header -->
+    <div class="px-4 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white">
+            Welcome back, {@current_scope.user.email
+            |> String.split("@")
+            |> hd()
+            |> String.upcase()}
+          </h1>
+          <p class="text-gray-400 text-sm mt-1">Ready to crush your next workout?</p>
+        </div>
+        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+          <span class="text-white font-bold text-lg">
+            {@current_scope.user.email |> String.first() |> String.upcase()}
           </span>
-        </p>
-      </div>
-    </div>
-    
-<!-- Create New Workout Button -->
-    <div class="flex-none p-4 bg-gray-800 border-b-2 border-gray-700">
-      <div class="max-w-md mx-auto">
-        <button
-          phx-click="navigate_to_create"
-          class="w-full bg-orange-600 hover:bg-orange-700 py-4 rounded-lg font-black text-white text-lg uppercase tracking-wider transition-all"
-        >
-          ➕ Create New Workout
-        </button>
-      </div>
-    </div>
-    
-<!-- Stats Section -->
-    <div class="flex-none p-4 bg-gray-800 border-b-2 border-gray-700">
-      <div class="max-w-md mx-auto">
-        <h2 class="text-lg font-black text-orange-400 mb-3 tracking-wide uppercase">
-          📊 Your Stats
-        </h2>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="bg-gray-900 p-4 rounded-lg border-2 border-gray-600">
-            <div class="text-center">
-              <div class="text-2xl font-black text-white">{@total_workouts}</div>
-              <div class="text-xs text-gray-400 uppercase tracking-wide">Total Workouts</div>
-            </div>
-          </div>
-          <div class="bg-gray-900 p-4 rounded-lg border-2 border-gray-600">
-            <div class="text-center">
-              <div class="text-2xl font-black text-orange-400">{@this_week_count}</div>
-              <div class="text-xs text-gray-400 uppercase tracking-wide">This Week</div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
     
-<!-- Recent Workouts Section -->
-    <div class="flex-1 p-4 overflow-y-auto">
-      <div class="max-w-md mx-auto">
-        <h2 class="text-lg font-black text-orange-400 mb-4 tracking-wide uppercase">
-          🔥 Recent Workouts
-        </h2>
-
+<!-- Stats Cards -->
+    <div class="px-4 pb-6">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div class="text-2xl font-bold text-orange-500">{@total_workouts}</div>
+          <div class="text-gray-400 text-sm">Total Workouts</div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div class="text-2xl font-bold text-green-500">{@this_week_count}</div>
+          <div class="text-gray-400 text-sm">This Week</div>
+        </div>
+      </div>
+    </div>
+    
+<!-- Recent Workouts -->
+    <div class="px-4">
+      <h2 class="text-lg font-semibold text-white mb-4">Recent Workouts</h2>
+      <div class="space-y-3">
         <%= if @workouts_empty? do %>
-          <div class="bg-gray-800 p-6 rounded-lg border-2 border-gray-600 text-center">
-            <div class="text-4xl mb-2">💪</div>
-            <h3 class="text-xl font-bold text-gray-300 mb-2">Ready to Start?</h3>
-            <p class="text-gray-500 text-sm mb-4">
-              Create your first workout to begin tracking your fitness journey!
-            </p>
-            <button
-              phx-click="navigate_to_create"
-              class="bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg font-bold text-white uppercase tracking-wide transition-all"
+          <div class="text-center py-8">
+            <div class="text-gray-500 mb-4">
+              <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                >
+                </path>
+              </svg>
+            </div>
+            <p class="text-gray-400">No workouts yet</p>
+            <.link
+              navigate={~p"/notebook"}
+              class="text-orange-500 hover:text-orange-400 text-sm mt-2 inline-block"
             >
-              Create First Workout
-            </button>
+              Create your first workout
+            </.link>
           </div>
         <% else %>
-          <div class="space-y-3">
-            <%= for workout <- @recent_workouts do %>
-              <div
-                class="bg-gray-800 p-4 rounded-lg border-2 border-gray-600 hover:border-gray-500 cursor-pointer transition-all"
-                phx-click="view_workout"
-                phx-value-id={workout.id}
-              >
-                <div class="flex items-start justify-between mb-2">
-                  <h3 class="text-lg font-black text-white leading-tight">{workout.name}</h3>
-                  <span class={"inline-block px-2 py-1 text-xs font-bold text-white rounded-full #{get_metric_color(workout.metric)}"}>
-                    {workout.metric}
-                  </span>
-                </div>
-                <p class="text-gray-300 text-sm mb-3 line-clamp-2">{workout.description}</p>
-                <div class="flex justify-between items-center">
-                  <span class="text-orange-400 font-bold text-xs uppercase tracking-wide">
-                    📅 {format_date(workout.inserted_at)}
-                  </span>
-                  <svg
-                    class="w-4 h-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M9 5l7 7-7 7"
-                    >
-                    </path>
-                  </svg>
-                </div>
+          <%= for workout <- @recent_workouts do %>
+            <div
+              class="bg-gray-800 rounded-lg p-4 border border-gray-700 hover:border-gray-600 cursor-pointer transition-colors"
+              phx-click="view_workout"
+              phx-value-id={workout.id}
+            >
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="text-lg font-semibold text-white">{workout.name}</h3>
+                <span class={"inline-block px-2 py-1 text-xs font-semibold text-white rounded-full #{get_metric_color(workout.metric)}"}>
+                  {workout.metric}
+                </span>
               </div>
-            <% end %>
-          </div>
+              <p class="text-gray-300 text-sm mb-3 line-clamp-2">{workout.description}</p>
+              <div class="flex justify-between items-center">
+                <span class="text-orange-400 text-xs">
+                  {format_date(workout.inserted_at)}
+                </span>
+                <svg
+                  class="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  >
+                  </path>
+                </svg>
+              </div>
+            </div>
+          <% end %>
         <% end %>
       </div>
     </div>
     
-<!-- Bottom Navigation -->
-    <div class="flex-none p-4 bg-gray-800 border-t-4 border-orange-500">
-      <div class="max-w-md mx-auto">
-        <div class="flex justify-around items-center">
-          <!-- Notebook Button (Left) -->
-          <button
-            phx-click="navigate_to_notebook"
-            class="flex flex-col items-center space-y-1 p-3 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <div class="w-8 h-8 bg-gray-600 rounded border-2 border-gray-500 flex items-center justify-center">
-              <span class="text-sm font-bold">📖</span>
-            </div>
-            <span class="text-xs font-bold text-gray-300 uppercase tracking-wide">Notebook</span>
-          </button>
-          
-<!-- Home Button (Center) -->
-          <button class="flex flex-col items-center space-y-1 p-3 rounded-lg bg-orange-600 hover:bg-orange-700 transition-colors">
-            <div class="w-8 h-8 bg-orange-500 rounded border-2 border-orange-400 flex items-center justify-center">
-              <span class="text-sm font-bold">🏠</span>
-            </div>
-            <span class="text-xs font-bold text-white uppercase tracking-wide">Home</span>
-          </button>
-          
-<!-- Friends Button (Right) -->
-          <button
-            phx-click="navigate_to_friends"
-            class="flex flex-col items-center space-y-1 p-3 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <div class="w-8 h-8 bg-gray-600 rounded border-2 border-gray-500 flex items-center justify-center">
-              <span class="text-sm font-bold">👥</span>
-            </div>
-            <span class="text-xs font-bold text-gray-300 uppercase tracking-wide">Friends</span>
-          </button>
-        </div>
-      </div>
-    </div>
+<!-- Use shared bottom navigation -->
+    <RepRivalsWeb.Components.BottomNavbar.bottom_navbar current_page="home" />
   </div>
 </Layouts.app>

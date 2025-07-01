@@ -7,6 +7,19 @@
 # General application configuration
 import Config
 
+config :rep_rivals, :scopes,
+  user: [
+    default: true,
+    module: RepRivals.Accounts.Scope,
+    assign_key: :current_scope,
+    access_path: [:user, :id],
+    schema_key: :user_id,
+    schema_type: :id,
+    schema_table: :users,
+    test_data_fixture: RepRivals.AccountsFixtures,
+    test_login_helper: :register_and_log_in_user
+  ]
+
 config :rep_rivals,
   ecto_repos: [RepRivals.Repo],
   generators: [timestamp_type: :utc_datetime]

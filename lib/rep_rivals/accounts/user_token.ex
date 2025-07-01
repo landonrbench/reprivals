@@ -155,17 +155,26 @@ defmodule RepRivals.Accounts.UserToken do
 
   The query returns the user found by the token, if any.
 
-  This is used for general email token verification (confirmation, reset password, etc).
-  The given token is valid if it matches its hashed counterpart in the database.
+  This is used to validate requests to confirm users and reset their passwords.
+  The given token is valid if it matches its hashed counterpart in the
+  database and if it has not expired. The context can be "confirm" or "reset_password".
   """
   def verify_email_token_query(token, context) do
     case Base.url_decode64(token, padding: false) do
       {:ok, decoded_token} ->
         hashed_token = :crypto.hash(@hash_algorithm, decoded_token)
 
+        validity_days =
+          case context do
+            "confirm" -> 7
+            "reset_password" -> 1
+            _ -> 7
+          end
+
         query =
           from token in by_token_and_context_query(hashed_token, context),
             join: user in assoc(token, :user),
+            where: token.inserted_at > ago(^validity_days, "day"),
             where: token.sent_to == user.email,
             select: user
 

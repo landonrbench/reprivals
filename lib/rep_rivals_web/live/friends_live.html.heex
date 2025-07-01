@@ -1,214 +1,179 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="min-h-screen bg-gray-900 text-white flex flex-col">
+  <div class="min-h-screen bg-gray-900 pb-20">
     <!-- Header -->
-    <div class="flex-none p-4 bg-gray-800 border-b-4 border-orange-500">
-      <div class="max-w-md mx-auto">
-        <div class="flex items-center justify-between">
-          <button
-            phx-click="back_to_home"
-            class="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full text-white hover:bg-gray-600 transition-colors"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-          </button>
-          <h1 class="text-2xl font-black text-orange-400 uppercase tracking-wide">
-            👥 Friends
-          </h1>
-          <button
-            phx-click="show_add_friend_modal"
-            class="flex items-center justify-center w-10 h-10 bg-orange-600 rounded-full text-white hover:bg-orange-700 transition-colors"
-          >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-          </button>
-        </div>
+    <div class="pt-8 pb-6 px-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-white mb-2">
+          Friends
+        </h1>
+        <p class="text-gray-400">Connect with your workout buddies</p>
       </div>
     </div>
     
-<!-- Content -->
-    <div class="flex-1 p-4 overflow-y-auto">
-      <div class="max-w-md mx-auto space-y-6">
-        
+<!-- Main Content -->
+    <div class="px-6">
+      <!-- Add Friend Button or Form -->
+      <div class="mb-6">
+        <%= if @show_add_form? do %>
+          <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+            <h3 class="text-lg font-bold text-white mb-4">Add Friend</h3>
+            <form phx-submit="send_request" class="space-y-4">
+              <div>
+                <input
+                  type="email"
+                  name="email"
+                  value={@friend_email}
+                  phx-change="update_email"
+                  placeholder="Enter friend's email address"
+                  class="w-full bg-gray-700 text-white placeholder-gray-400 border border-gray-600 rounded-lg px-4 py-3 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50"
+                  required
+                />
+              </div>
+              <div class="flex space-x-3">
+                <button
+                  type="submit"
+                  class="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200"
+                >
+                  Send Request
+                </button>
+                <button
+                  type="button"
+                  phx-click="cancel_add"
+                  class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-lg transition-all duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        <% else %>
+          <button
+            phx-click="add_friend"
+            class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all duration-200"
+          >
+            + Add Friend
+          </button>
+        <% end %>
+      </div>
+      
 <!-- Pending Friend Requests -->
-        <%= if @pending_requests != [] do %>
-          <div class="bg-gray-800 rounded-xl p-4 border-2 border-gray-700">
-            <h2 class="text-lg font-black text-orange-400 mb-4 tracking-wide uppercase">
-              📨 Pending Requests
-            </h2>
-            <div class="space-y-3">
-              <%= for request <- @pending_requests do %>
-                <div class="flex items-center justify-between py-3 px-4 bg-gray-900 rounded-lg border border-gray-600">
+      <%= if @pending_requests != [] do %>
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-4">Friend Requests</h2>
+          <div class="space-y-3">
+            <%= for request <- @pending_requests do %>
+              <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="flex items-center justify-between">
                   <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                      {get_friend_email_initials(request.user.email)}
+                    <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
+                      <span class="text-white font-bold text-lg">
+                        {String.first(request.user.email)}
+                      </span>
                     </div>
                     <div>
-                      <div class="text-white font-bold">{request.user.email}</div>
-                      <div class="text-gray-400 text-xs">Wants to be friends</div>
+                      <h3 class="text-lg font-bold text-white">{request.user.email}</h3>
+                      <p class="text-gray-400 text-sm">Wants to be your friend</p>
                     </div>
                   </div>
-                  <div class="flex gap-2">
+                  <div class="flex space-x-2">
                     <button
                       phx-click="accept_request"
                       phx-value-id={request.id}
-                      class="px-3 py-1 bg-green-600 text-white text-xs font-bold rounded hover:bg-green-700 transition-colors"
+                      class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200"
                     >
                       Accept
                     </button>
                     <button
                       phx-click="decline_request"
                       phx-value-id={request.id}
-                      class="px-3 py-1 bg-red-600 text-white text-xs font-bold rounded hover:bg-red-700 transition-colors"
+                      class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-all duration-200"
                     >
                       Decline
                     </button>
                   </div>
                 </div>
-              <% end %>
-            </div>
+              </div>
+            <% end %>
           </div>
-        <% end %>
-        
-<!-- Current Friends -->
-        <div class="bg-gray-800 rounded-xl p-4 border-2 border-gray-700">
-          <h2 class="text-lg font-black text-orange-400 mb-4 tracking-wide uppercase">
-            🤝 Your Friends ({length(@friends)})
-          </h2>
-
-          <%= if @friends == [] do %>
-            <div class="text-center py-8">
-              <div class="text-4xl mb-2">👥</div>
-              <h3 class="text-xl font-bold text-gray-300 mb-2">No Friends Yet</h3>
-              <p class="text-gray-500 text-sm mb-4">
-                Add friends to challenge them to workouts!
-              </p>
-              <button
-                phx-click="show_add_friend_modal"
-                class="bg-orange-600 hover:bg-orange-700 px-6 py-3 rounded-lg font-bold text-white uppercase tracking-wide transition-all"
-              >
-                Add Your First Friend
-              </button>
-            </div>
-          <% else %>
-            <div class="space-y-3">
-              <%= for friend <- @friends do %>
-                <div class="flex items-center space-x-3 py-3 px-4 bg-gray-900 rounded-lg border border-gray-600 hover:border-gray-500 transition-colors">
-                  <div class="w-10 h-10 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {get_friend_email_initials(friend.email)}
+        </div>
+      <% end %>
+      
+<!-- Sent Friend Requests -->
+      <%= if @sent_requests != [] do %>
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-4">Sent Requests</h2>
+          <div class="space-y-3">
+            <%= for request <- @sent_requests do %>
+              <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <span class="text-white font-bold text-lg">
+                        {String.first(request.friend.email)}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-bold text-white">{request.friend.email}</h3>
+                      <p class="text-gray-400 text-sm">Request pending</p>
+                    </div>
                   </div>
-                  <div class="flex-1">
-                    <div class="text-white font-bold">{friend.email}</div>
-                    <div class="text-gray-400 text-xs">Friend</div>
-                  </div>
-                  <div class="text-green-400">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path
-                        fill-rule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
+                  <div class="text-yellow-500 font-semibold text-sm">
+                    Pending
                   </div>
                 </div>
-              <% end %>
-            </div>
-          <% end %>
+              </div>
+            <% end %>
+          </div>
         </div>
-        
-<!-- Sent Requests -->
-        <%= if @sent_requests != [] do %>
-          <div class="bg-gray-800 rounded-xl p-4 border-2 border-gray-700">
-            <h2 class="text-lg font-black text-orange-400 mb-4 tracking-wide uppercase">
-              📤 Sent Requests
-            </h2>
-            <div class="space-y-3">
-              <%= for request <- @sent_requests do %>
-                <div class="flex items-center space-x-3 py-3 px-4 bg-gray-900 rounded-lg border border-gray-600">
-                  <div class="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {get_friend_email_initials(request.friend.email)}
+      <% end %>
+      
+<!-- Friends List -->
+      <%= if @friends_empty? do %>
+        <div class="text-center py-12">
+          <div class="text-6xl mb-4">👥</div>
+          <h2 class="text-xl font-bold text-white mb-2">No Friends Yet!</h2>
+          <p class="text-gray-400">Add friends to share your fitness journey</p>
+        </div>
+      <% else %>
+        <div class="mb-6">
+          <h2 class="text-xl font-bold text-white mb-4">Friends</h2>
+          <div class="space-y-4">
+            <%= for friend <- @friends do %>
+              <div class="bg-gray-800 rounded-xl p-4 border border-gray-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+                      <span class="text-white font-bold text-lg">
+                        {String.first(friend.email)}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-bold text-white">{friend.email}</h3>
+                      <p class="text-gray-400 text-sm">
+                        Friend since {format_date(friend.inserted_at)}
+                      </p>
+                    </div>
                   </div>
-                  <div class="flex-1">
-                    <div class="text-white font-bold">{request.friend.email}</div>
-                    <div class="text-gray-400 text-xs">Request pending</div>
-                  </div>
-                  <div class="text-yellow-400">
+                  <button class="text-gray-400 hover:text-white">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         stroke-width="2"
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
+                        d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                      >
+                      </path>
                     </svg>
-                  </div>
+                  </button>
                 </div>
-              <% end %>
-            </div>
+              </div>
+            <% end %>
           </div>
-        <% end %>
-      </div>
-    </div>
-  </div>
-  
-<!-- Add Friend Modal -->
-  <%= if @show_add_friend_modal do %>
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div class="bg-gray-800 rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-gray-700">
-        <div class="text-center mb-6">
-          <h3 class="text-lg font-bold text-white">Add Friend</h3>
-          <p class="text-gray-400 text-sm mt-2">Enter their email address</p>
         </div>
-
-        <form phx-submit="add_friend" class="space-y-4">
-          <div>
-            <label class="block text-gray-300 font-semibold text-sm mb-2">
-              Email Address *
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={@friend_email}
-              placeholder="friend@example.com"
-              class="w-full px-4 py-3 bg-gray-900 text-white border border-gray-600 rounded-lg font-semibold focus:ring-2 focus:ring-orange-500 focus:border-orange-500 placeholder:text-gray-500"
-              required
-            />
-          </div>
-
-          <%= if @add_friend_error do %>
-            <div class="text-red-400 text-sm bg-red-900/20 p-3 rounded border border-red-800">
-              {@add_friend_error}
-            </div>
-          <% end %>
-
-          <div class="flex gap-3 pt-4">
-            <button
-              type="button"
-              phx-click="hide_add_friend_modal"
-              class="flex-1 py-3 px-4 bg-gray-700 text-gray-300 font-semibold rounded-lg hover:bg-gray-600 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="flex-1 py-3 px-4 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors"
-            >
-              Send Request
-            </button>
-          </div>
-        </form>
-      </div>
+      <% end %>
     </div>
-  <% end %>
+    
+<!-- Use shared bottom navigation -->
+    <RepRivalsWeb.Components.BottomNavbar.bottom_navbar current_page="friends" />
+  </div>
 </Layouts.app>

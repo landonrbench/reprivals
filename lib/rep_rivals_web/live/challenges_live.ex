@@ -35,6 +35,7 @@ defmodule RepRivalsWeb.ChallengesLive do
       |> assign(:selected_friends, [])
       |> assign(:challenge_form, to_form(%{}))
       |> assign(:workouts, workouts)
+      |> assign(:workout_search, "")
 
     {:ok, socket}
   end
@@ -53,10 +54,21 @@ defmodule RepRivalsWeb.ChallengesLive do
     {:noreply,
      socket
      |> assign(:show_create_modal, true)
-     |> assign(:workouts, workouts)}
+     |> assign(:workouts, workouts)
+     |> assign(:workout_search, "")}
   end
 
   @impl true
+  def handle_event("search_workouts", %{"value" => search_term}, socket) do
+    user_id = socket.assigns.current_scope.user.id
+    filtered_workouts = Library.search_workouts_for_user(user_id, search_term)
+
+    {:noreply,
+     socket
+     |> assign(:workouts, filtered_workouts)
+     |> assign(:workout_search, search_term)}
+  end
+
   def handle_event("hide_create_modal", _params, socket) do
     {:noreply,
      socket

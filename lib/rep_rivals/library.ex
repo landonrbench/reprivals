@@ -41,6 +41,27 @@ defmodule RepRivals.Library do
   end
 
   @doc """
+  Returns the list of workouts for a specific user filtered by search term.
+
+  ## Examples
+
+      iex> search_workouts_for_user(user_id, "push")
+      [%Workout{}, ...]
+
+  """
+  def search_workouts_for_user(user_id, search_term) when is_binary(search_term) do
+    search_pattern = "%#{search_term}%"
+
+    Workout
+    |> where([w], w.user_id == ^user_id)
+    |> where([w], ilike(w.name, ^search_pattern))
+    |> order_by([w], desc: w.inserted_at)
+    |> Repo.all()
+  end
+
+  def search_workouts_for_user(user_id, _), do: list_workouts_for_user(user_id)
+
+  @doc """
   Gets a single workout.
 
   Raises `Ecto.NoResultsError` if the Workout does not exist.
@@ -428,8 +449,8 @@ defmodule RepRivals.Library do
           challenge_id: challenge_id,
           user_id: user_id,
           status: "invited",
-          inserted_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second),
-          updated_at: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
+          inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+          updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
         }
       end)
 

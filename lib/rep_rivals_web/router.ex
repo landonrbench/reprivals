@@ -19,6 +19,37 @@ defmodule RepRivalsWeb.Router do
 
   scope "/", RepRivalsWeb do
     pipe_through :browser
+
+    live_session :current_user,
+      on_mount: [{RepRivalsWeb.UserAuth, :mount_current_scope}] do
+      live "/users/register", UserLive.Registration, :new
+      live "/users/log-in", UserLive.Login, :new
+      live "/users/log-in/:token", UserLive.Confirmation, :new
+      live "/users/reset-password", UserLive.ForgotPassword, :new
+      live "/users/reset-password/:token", UserLive.ResetPassword, :edit
+    end
+
+    post "/users/log-in", UserSessionController, :create
+    delete "/users/log-out", UserSessionController, :delete
+  end
+
+  scope "/", RepRivalsWeb do
+    pipe_through [:browser, :require_authenticated_user]
+
+    live_session :require_authenticated_user,
+      on_mount: [{RepRivalsWeb.UserAuth, :require_authenticated}] do
+      live "/", HomeLive, :index
+      live "/notebook", WorkoutNotebookLive, :index
+      live "/workouts/new", WorkoutNewLive, :new
+      live "/workouts/:id", WorkoutDetailLive, :show
+      live "/workouts/:id/edit", WorkoutEditLive, :edit
+      live "/friends", FriendsLive, :index
+      live "/challenges", ChallengesLive, :index
+      live "/users/settings", UserLive.Settings, :edit
+      live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
+    end
+
+    post "/users/update-password", UserSessionController, :update_password
   end
 
   # Other scopes may use custom stacks.
@@ -41,40 +72,5 @@ defmodule RepRivalsWeb.Router do
       live_dashboard "/dashboard", metrics: RepRivalsWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
-  end
-
-  ## Authentication routes
-
-  scope "/", RepRivalsWeb do
-    pipe_through [:browser, :require_authenticated_user]
-
-    live_session :require_authenticated_user,
-      on_mount: [{RepRivalsWeb.UserAuth, :require_authenticated}] do
-      live "/", HomeLive, :index
-      live "/notebook", WorkoutNotebookLive, :index
-      live "/workouts/new", WorkoutNewLive, :new
-      live "/workouts/:id", WorkoutDetailLive, :show
-      live "/workouts/:id/edit", WorkoutEditLive, :edit
-      live "/friends", FriendsLive, :index
-      live "/challenges", ChallengesLive
-      live "/users/settings", UserLive.Settings, :edit
-      live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
-    end
-
-    post "/users/update-password", UserSessionController, :update_password
-  end
-
-  scope "/", RepRivalsWeb do
-    pipe_through [:browser]
-
-    live_session :current_user,
-      on_mount: [{RepRivalsWeb.UserAuth, :mount_current_scope}] do
-      live "/users/register", UserLive.Registration, :new
-      live "/users/log-in", UserLive.Login, :new
-      live "/users/log-in/:token", UserLive.Confirmation, :new
-    end
-
-    post "/users/log-in", UserSessionController, :create
-    delete "/users/log-out", UserSessionController, :delete
   end
 end

@@ -7,76 +7,92 @@ defmodule RepRivalsWeb.FriendsLive do
   def mount(_params, _session, socket) do
     user_id = socket.assigns.current_scope.user.id
 
-    # Get all friend-related data
     friends = Accounts.list_friends(user_id)
     pending_requests = Accounts.list_pending_friend_requests(user_id)
     sent_requests = Accounts.list_sent_friend_requests(user_id)
 
     {:ok,
      socket
-     |> assign(:page_title, "Friends")
      |> assign(:friends, friends)
      |> assign(:pending_requests, pending_requests)
      |> assign(:sent_requests, sent_requests)
-     |> assign(:show_add_friend_modal, false)
-     |> assign(:friend_email, "")
-     |> assign(:add_friend_error, nil)}
+     |> assign(:friends_empty?, friends == [])
+     |> assign(:show_add_form?, false)
+     |> assign(:friend_email, "")}
   end
 
   @impl true
-  def handle_event("show_add_friend_modal", _params, socket) do
+  def handle_event("add_friend", _params, socket) do
+    {:noreply, assign(socket, :show_add_form?, true)}
+  end
+
+  @impl true
+  def handle_event("cancel_add", _params, socket) do
     {:noreply,
-     assign(socket, show_add_friend_modal: true, friend_email: "", add_friend_error: nil)}
+     socket
+     |> assign(:show_add_form?, false)
+     |> assign(:friend_email, "")}
   end
 
   @impl true
-  def handle_event("hide_add_friend_modal", _params, socket) do
-    {:noreply,
-     assign(socket, show_add_friend_modal: false, friend_email: "", add_friend_error: nil)}
+  def handle_event("update_email", %{"email" => email}, socket) do
+    {:noreply, assign(socket, :friend_email, email)}
   end
 
   @impl true
-  def handle_event("add_friend", %{"email" => email}, socket) do
-    current_user_id = socket.assigns.current_scope.user.id
+  def handle_event("send_request", %{"email" => email}, socket) do
+    current_user = socket.assigns.current_scope.user
+    current_user_email = current_user.email
 
-    case Accounts.find_user_by_email(email) do
-      nil ->
-        {:noreply, assign(socket, add_friend_error: "User not found with that email")}
+    case String.trim(email) do
+      "" ->
+        {:noreply, put_flash(socket, :error, "Please enter an email address")}
 
-      user when user.id == current_user_id ->
-        {:noreply, assign(socket, add_friend_error: "You cannot add yourself as a friend")}
+      ^current_user_email ->
+        {:noreply, put_flash(socket, :error, "You can't add yourself as a friend!")}
 
-      user ->
-        if Accounts.friendship_exists?(current_user_id, user.id) do
-          {:noreply, assign(socket, add_friend_error: "Friend request already exists")}
-        else
-          case Accounts.send_friend_request(current_user_id, user.id) do
-            {:ok, _friendship} ->
-              # Refresh sent requests
-              sent_requests = Accounts.list_sent_friend_requests(current_user_id)
+      email ->
+        case Accounts.find_user_by_email(email) do
+          nil ->
+            {:noreply, put_flash(socket, :error, "User not found with email: #{email}")}
 
+          friend ->
+            if Accounts.friendship_exists?(current_user.id, friend.id) do
               {:noreply,
-               socket
-               |> assign(:sent_requests, sent_requests)
-               |> assign(:show_add_friend_modal, false)
-               |> assign(:friend_email, "")
-               |> assign(:add_friend_error, nil)
-               |> put_flash(:info, "Friend request sent successfully!")}
+               put_flash(
+                 socket,
+                 :error,
+                 "Friend request already exists or you're already friends"
+               )}
+            else
+              case Accounts.send_friend_request(current_user.id, friend.id) do
+                {:ok, _friendship} ->
+                  # Refresh sent requests
+                  sent_requests = Accounts.list_sent_friend_requests(current_user.id)
 
-            {:error, _changeset} ->
-              {:noreply, assign(socket, add_friend_error: "Failed to send friend request")}
-          end
+                  {:noreply,
+                   socket
+                   |> assign(:sent_requests, sent_requests)
+                   |> assign(:show_add_form?, false)
+                   |> assign(:friend_email, "")
+                   |> put_flash(:info, "Friend request sent to #{email}!")}
+
+                {:error, _changeset} ->
+                  {:noreply, put_flash(socket, :error, "Failed to send friend request")}
+              end
+            end
         end
     end
   end
 
   @impl true
-  def handle_event("accept_request", %{"id" => friendship_id}, socket) do
-    friendship = Accounts.get_friendship!(friendship_id)
-    user_id = socket.assigns.current_scope.user.id
+  def handle_event("accept_request", %{"id" => id}, socket) do
+    friendship = Accounts.get_friendship!(id)
 
     case Accounts.accept_friend_request(friendship) do
       {:ok, _friendship} ->
+        user_id = socket.assigns.current_scope.user.id
+
         # Refresh all friend data
         friends = Accounts.list_friends(user_id)
         pending_requests = Accounts.list_pending_friend_requests(user_id)
@@ -85,6 +101,7 @@ defmodule RepRivalsWeb.FriendsLive do
          socket
          |> assign(:friends, friends)
          |> assign(:pending_requests, pending_requests)
+         |> assign(:friends_empty?, friends == [])
          |> put_flash(:info, "Friend request accepted!")}
 
       {:error, _changeset} ->
@@ -93,13 +110,12 @@ defmodule RepRivalsWeb.FriendsLive do
   end
 
   @impl true
-  def handle_event("decline_request", %{"id" => friendship_id}, socket) do
-    friendship = Accounts.get_friendship!(friendship_id)
-    user_id = socket.assigns.current_scope.user.id
+  def handle_event("decline_request", %{"id" => id}, socket) do
+    friendship = Accounts.get_friendship!(id)
 
     case Accounts.decline_friend_request(friendship) do
       {:ok, _friendship} ->
-        # Refresh pending requests
+        user_id = socket.assigns.current_scope.user.id
         pending_requests = Accounts.list_pending_friend_requests(user_id)
 
         {:noreply,
@@ -112,16 +128,10 @@ defmodule RepRivalsWeb.FriendsLive do
     end
   end
 
-  @impl true
-  def handle_event("back_to_home", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/")}
-  end
-
-  defp get_friend_email_initials(email) do
-    email
-    |> String.split("@")
-    |> hd()
-    |> String.upcase()
-    |> String.slice(0, 2)
+  defp format_date(datetime) do
+    datetime
+    |> DateTime.to_date()
+    |> Date.to_string()
+    |> String.replace("-", "/")
   end
 end

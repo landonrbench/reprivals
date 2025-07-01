@@ -238,6 +238,16 @@
               <%= if is_nil(@selected_workout) do %>
                 <div class="mb-6">
                   <h3 class="text-lg font-medium text-white mb-3">Select Workout</h3>
+                  <div class="mb-4">
+                    <input
+                      type="text"
+                      phx-keyup="search_workouts"
+                      phx-debounce="300"
+                      value={@workout_search}
+                      placeholder="Search workouts..."
+                      class="w-full bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    />
+                  </div>
                   <div class="space-y-2 max-h-48 overflow-y-auto">
                     <%= for workout <- @workouts do %>
                       <button

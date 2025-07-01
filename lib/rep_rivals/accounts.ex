@@ -86,7 +86,7 @@ defmodule RepRivals.Accounts do
   ## Examples
 
       iex> change_user_registration(user)
-      %Ecto.Changeset{data: %User{}}
+      %Ecto.Changeset
 
   """
   def change_user_registration(%User{} = user, attrs \\ %{}) do
@@ -104,8 +104,8 @@ defmodule RepRivals.Accounts do
       %Ecto.Changeset{data: %User{}}
 
   """
-  def change_user_email(user, attrs \\ %{}) do
-    User.email_changeset(user, attrs, validate_email: false)
+  def change_user_email(user, attrs \\ %{}, opts \\ []) do
+    User.email_changeset(user, attrs, opts ++ [validate_email: false])
   end
 
   @doc """
@@ -147,10 +147,7 @@ defmodule RepRivals.Accounts do
   end
 
   defp user_email_multi(user, email, context) do
-    changeset =
-      user
-      |> User.email_changeset(%{email: email})
-      |> User.confirm_changeset()
+    changeset = User.email_changeset(user, %{email: email})
 
     Ecto.Multi.new()
     |> Ecto.Multi.update(:user, changeset)
@@ -180,11 +177,11 @@ defmodule RepRivals.Accounts do
   ## Examples
 
       iex> change_user_password(user)
-      %Ecto.Changeset{}}
+      %Ecto.Changeset{data: %User{}}
 
   """
-  def change_user_password(user, attrs \\ %{}) do
-    User.password_changeset(user, attrs, hash_password: false)
+  def change_user_password(user, attrs \\ %{}, opts \\ []) do
+    User.password_changeset(user, attrs, opts ++ [hash_password: false])
   end
 
   @doc """
@@ -216,6 +213,30 @@ defmodule RepRivals.Accounts do
   end
 
   @doc """
+  Updates the user password.
+
+  Returns the updated user, as well as a list of expired tokens.
+
+  ## Examples
+
+      iex> update_user_password(user, %{password: ...})
+      {:ok, %User{}, [...]}
+
+      iex> update_user_password(user, %{password: "too short"})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_user_password(user, attrs) do
+    user
+    |> User.password_changeset(attrs)
+    |> update_user_and_delete_all_tokens()
+    |> case do
+      {:ok, user, expired_tokens} -> {:ok, user, expired_tokens}
+      {:error, :user, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  @doc """
   Checks if the user is in sudo mode (recently authenticated).
 
   ## Examples
@@ -227,10 +248,12 @@ defmodule RepRivals.Accounts do
       false
 
   """
-  def sudo_mode?(%User{authenticated_at: nil}), do: false
+  def sudo_mode?(user, minutes \\ -20)
 
-  def sudo_mode?(%User{authenticated_at: authenticated_at}) do
-    sudo_mode?(%User{authenticated_at: authenticated_at}, -300)
+  def sudo_mode?(%User{authenticated_at: nil}, _minutes), do: false
+
+  def sudo_mode?(%User{authenticated_at: ts}, minutes) when is_struct(ts, DateTime) do
+    DateTime.after?(ts, DateTime.utc_now() |> DateTime.add(minutes, :minute))
   end
 
   def sudo_mode?(%User{authenticated_at: authenticated_at}, within_seconds) do
@@ -239,6 +262,8 @@ defmodule RepRivals.Accounts do
       datetime -> DateTime.diff(DateTime.utc_now(), datetime) <= abs(within_seconds)
     end
   end
+
+  def sudo_mode?(_user, _minutes), do: false
 
   ## Session
 
@@ -253,10 +278,24 @@ defmodule RepRivals.Accounts do
 
   @doc """
   Gets the user with the given signed token.
+
+  If the token is valid `{user, token_inserted_at}` is returned, otherwise `nil` is returned.
   """
   def get_user_by_session_token(token) do
     {:ok, query} = UserToken.verify_session_token_query(token)
     Repo.one(query)
+  end
+
+  @doc """
+  Gets the user with the given magic link token.
+  """
+  def get_user_by_magic_link_token(token) do
+    with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
+         {user, _token} <- Repo.one(query) do
+      user
+    else
+      _ -> nil
+    end
   end
 
   @doc """
@@ -270,26 +309,48 @@ defmodule RepRivals.Accounts do
   ## Magic Link Login
 
   @doc """
-  Logs in a user using a magic link token.
+  Logs the user in by magic link.
 
-  ## Examples
+  There are three cases to consider:
 
-      iex> login_user_by_magic_link(token)
-      {:ok, %User{}, [%UserToken{}]}
+  1. The user has already confirmed their email. They are logged in
+     and the magic link is expired.
 
-      iex> login_user_by_magic_link(invalid_token)
-      :error
+  2. The user has not confirmed their email and no password is set.
+     In this case, the user gets confirmed, logged in, and all tokens -
+     including session ones - are expired. In theory, no other tokens
+     exist but we delete all of them for best security practices.
 
+  3. The user has not confirmed their email but a password is set.
+     This cannot happen in the default implementation but may be the
+     source of security pitfalls. See the "Mixing magic link and password registration" section of
+     `mix help phx.gen.auth`.
   """
   def login_user_by_magic_link(token) do
-    with {:ok, query} <- UserToken.verify_magic_link_token_query(token),
-         {user, user_token} <- Repo.one(query) do
-      # Delete the magic link token and return expired session tokens
-      expired_tokens = Repo.all(UserToken.by_user_and_contexts_query(user, ["session"]))
-      Repo.delete(user_token)
-      {:ok, user, expired_tokens}
-    else
-      _ -> :error
+    {:ok, query} = UserToken.verify_magic_link_token_query(token)
+
+    case Repo.one(query) do
+      # Prevent session fixation attacks by disallowing magic links for unconfirmed users with password
+      {%User{confirmed_at: nil, hashed_password: hash}, _token} when not is_nil(hash) ->
+        raise """
+        magic link log in is not allowed for unconfirmed users with a password set!
+
+        This cannot happen with the default implementation, which indicates that you
+        might have adapted the code to a different use case. Please make sure to read the
+        "Mixing magic link and password registration" section of `mix help phx.gen.auth`.
+        """
+
+      {%User{confirmed_at: nil} = user, _token} ->
+        user
+        |> User.confirm_changeset()
+        |> update_user_and_delete_all_tokens()
+
+      {user, token} ->
+        Repo.delete!(token)
+        {:ok, user, []}
+
+      nil ->
+        {:error, :not_found}
     end
   end
 
@@ -302,11 +363,11 @@ defmodule RepRivals.Accounts do
       {:ok, %{to: ..., body: ...}}
 
   """
-  def deliver_login_instructions(%User{} = user, login_url_fun)
-      when is_function(login_url_fun, 1) do
-    {_encoded_token, user_token} = UserToken.build_email_token(user, "login")
+  def deliver_login_instructions(%User{} = user, magic_link_url_fun)
+      when is_function(magic_link_url_fun, 1) do
+    {encoded_token, user_token} = UserToken.build_email_token(user, "login")
     Repo.insert!(user_token)
-    UserNotifier.deliver_login_instructions(user, login_url_fun)
+    UserNotifier.deliver_login_instructions(user, magic_link_url_fun.(encoded_token))
   end
 
   ## Confirmation
@@ -577,4 +638,21 @@ defmodule RepRivals.Accounts do
 
   """
   def get_friendship!(id), do: Repo.get!(Friendship, id)
+
+  ## Token helper
+
+  defp update_user_and_delete_all_tokens(changeset) do
+    %{data: %User{} = user} = changeset
+
+    with {:ok, %{user: user, tokens_to_expire: expired_tokens}} <-
+           Ecto.Multi.new()
+           |> Ecto.Multi.update(:user, changeset)
+           |> Ecto.Multi.all(:tokens_to_expire, UserToken.by_user_and_contexts_query(user, :all))
+           |> Ecto.Multi.delete_all(:tokens, fn %{tokens_to_expire: tokens_to_expire} ->
+             UserToken.delete_all_query(tokens_to_expire)
+           end)
+           |> Repo.transaction() do
+      {:ok, user, expired_tokens}
+    end
+  end
 end
