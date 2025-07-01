@@ -555,6 +555,95 @@ defmodule RepRivals.Library do
   end
 
   @doc """
+  Creates a pre-workout challenge where the creator also participates.
+  This is for "let's all do this workout together" scenarios.
+
+  ## Examples
+
+      iex> create_group_challenge(%{name: "Morning Workout", workout_id: 1, creator_id: 1}, [2, 3])
+      {:ok, %Challenge{}}
+
+  """
+  def create_group_challenge(challenge_attrs, participant_user_ids) do
+    Repo.transaction(fn ->
+      # Create the challenge
+      case create_challenge(challenge_attrs) do
+        {:ok, challenge} ->
+          # Add all participants including the creator
+          creator_id = challenge_attrs[:creator_id] || challenge_attrs["creator_id"]
+          all_participant_ids = [creator_id | participant_user_ids] |> Enum.uniq()
+
+          case create_challenge_participants(challenge.id, all_participant_ids) do
+            {:ok, _participants} -> challenge
+            {:error, error} -> Repo.rollback(error)
+          end
+
+        {:error, error} ->
+          Repo.rollback(error)
+      end
+    end)
+  end
+
+  @doc """
+  Creates a post-workout challenge from an existing workout result.
+  The creator's result is automatically completed.
+
+  ## Examples
+
+      iex> create_challenge_from_result(workout_result, [2, 3])
+      {:ok, %Challenge{}}
+
+  """
+  def create_challenge_from_result(%WorkoutResult{} = workout_result, participant_user_ids) do
+    Repo.transaction(fn ->
+      # Preload workout and user
+      workout_result = Repo.preload(workout_result, [:workout, :user])
+
+      # Create challenge attrs from the workout result
+      challenge_attrs = %{
+        name: "Beat My #{workout_result.workout.name} Score!",
+        description: "I just completed this workout - can you beat my result?",
+        status: "active",
+        creator_id: workout_result.user_id,
+        workout_id: workout_result.workout_id
+      }
+
+      # Create the challenge
+      case create_challenge(challenge_attrs) do
+        {:ok, challenge} ->
+          # Create the creator as a completed participant
+          creator_participant_attrs = %{
+            challenge_id: challenge.id,
+            user_id: workout_result.user_id,
+            status: "completed",
+            result_value: workout_result.result_value,
+            result_unit: workout_result.result_unit,
+            result_notes: workout_result.notes,
+            completed_at: workout_result.logged_at,
+            inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
+            updated_at: DateTime.utc_now() |> DateTime.truncate(:second)
+          }
+
+          # Insert creator participant
+          case Repo.insert_all(ChallengeParticipant, [creator_participant_attrs], returning: true) do
+            {1, [_creator_participant]} ->
+              # Create invited participants
+              case create_challenge_participants(challenge.id, participant_user_ids) do
+                {:ok, _participants} -> challenge
+                {:error, error} -> Repo.rollback(error)
+              end
+
+            error ->
+              Repo.rollback(error)
+          end
+
+        {:error, error} ->
+          Repo.rollback(error)
+      end
+    end)
+  end
+
+  @doc """
   Creates challenge participants for a list of user IDs.
 
   ## Examples
