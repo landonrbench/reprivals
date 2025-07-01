@@ -3,11 +3,13 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
 
   alias RepRivals.Library
   alias RepRivals.Library.WorkoutResult
+  alias RepRivals.Accounts
 
   @impl true
   def mount(%{"id" => id}, _session, socket) do
     workout = Library.get_workout!(id)
     workout_results = Library.list_workout_results(id)
+    users = Accounts.list_users()
 
     if connected?(socket) do
       Phoenix.PubSub.subscribe(RepRivals.PubSub, "workout_results:#{id}")
@@ -18,12 +20,16 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
      |> assign(:page_title, workout.name)
      |> assign(:workout, workout)
      |> assign(:workout_results, workout_results)
+     |> assign(:users, users)
      |> assign(:show_log_form, false)
      |> assign(:show_edit_modal, false)
      |> assign(:show_delete_modal, false)
      |> assign(:show_edit_result_form, false)
      |> assign(:show_delete_result_modal, false)
+     |> assign(:show_challenge_modal, false)
      |> assign(:current_result, nil)
+     |> assign(:challenge_result, nil)
+     |> assign(:selected_participant_ids, [])
      |> assign(:form, to_form(Library.change_workout_result(%WorkoutResult{})))
      |> assign(:edit_form, to_form(Library.change_workout(workout)))
      |> assign(:edit_result_form, to_form(Library.change_workout_result(%WorkoutResult{})))}
@@ -182,7 +188,65 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> assign(:show_delete_result_modal, false)
-         |> put_flash(:error, "Failed to delete result")}
+         |> put_flash(:error, "Failed to delete result"))
+    end
+  end
+
+  @impl true
+  def handle_event("challenge_friends", %{"result_id" => result_id}, socket) do
+    result = Enum.find(socket.assigns.workout_results, &(&1.id == String.to_integer(result_id)))
+
+    if result do
+      {:noreply,
+       socket
+       |> assign(:show_challenge_modal, true)
+       |> assign(:challenge_result, result)
+       |> assign(:selected_participant_ids, [])}
+    else
+      {:noreply, socket}
+    end
+  end
+
+  @impl true
+  def handle_event("hide_challenge_modal", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_challenge_modal, false)
+     |> assign(:challenge_result, nil)
+     |> assign(:selected_participant_ids, [])}
+  end
+
+  @impl true
+  def handle_event("toggle_participant", %{"user_id" => user_id}, socket) do
+    user_id = String.to_integer(user_id)
+    current_ids = socket.assigns.selected_participant_ids
+
+    updated_ids =
+      if user_id in current_ids do
+        List.delete(current_ids, user_id)
+      else
+        [user_id | current_ids]
+      end
+
+    {:noreply, assign(socket, :selected_participant_ids, updated_ids)}
+  end
+
+  @impl true
+  def handle_event("create_challenge_from_result", _params, socket) do
+    challenge_result = socket.assigns.challenge_result
+    participant_ids = socket.assigns.selected_participant_ids
+
+    case Library.create_challenge_from_result(challenge_result, participant_ids) do
+      {:ok, _challenge} ->
+        {:noreply,
+         socket
+         |> assign(:show_challenge_modal, false)
+         |> assign(:challenge_result, nil)
+         |> assign(:selected_participant_ids, [])
+         |> put_flash(:info, "Challenge created and friends invited!")}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to create challenge")}
     end
   end
 
@@ -228,13 +292,13 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> put_flash(:info, "Workout deleted successfully!")
-         |> push_navigate(to: ~p"/")}
+         |> push_navigate(to: ~p"/"))}
 
       {:error, _changeset} ->
         {:noreply,
          socket
          |> assign(show_delete_modal: false)
-         |> put_flash(:error, "Failed to delete workout")}
+         |> put_flash(:error, "Failed to delete workout"))
     end
   end
 
@@ -314,4 +378,9 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   rescue
     _ -> 0
   end
+
+  defp user_is_selected?(user_id, selected_ids) do
+    user_id in selected_ids
+  end
 end
+
