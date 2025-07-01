@@ -3,197 +3,187 @@ defmodule RepRivalsWeb.ChallengesLive do
 
   alias RepRivals.Library
   alias RepRivals.Accounts
-  alias RepRivals.Repo
+  alias RepRivals.Library.Challenge
+  alias RepRivals.Library.ChallengeParticipant
 
   @impl true
   def mount(_params, _session, socket) do
-    user_id = socket.assigns.current_scope.user.id
+    current_user = socket.assigns.current_scope.user
 
-    # Get all challenge data
-    my_challenges = Library.list_challenges_for_user(user_id)
-    challenge_invites = Library.list_challenge_invites_for_user(user_id)
-    friends = Accounts.list_friends(user_id)
+    # Subscribe to challenges and participants updates
+    Phoenix.PubSub.subscribe(RepRivals.PubSub, "challenges")
 
-    # Mark all challenge invites as viewed when the page loads
-    Enum.each(challenge_invites, fn invite ->
-      if is_nil(invite.viewed_at) do
-        Library.mark_challenge_viewed(invite)
-      end
-    end)
+    challenges = Library.list_challenges_for_user(current_user.id)
+    invites = Library.list_challenge_invites_for_user(current_user.id)
+    workouts = Library.list_workouts_for_user(current_user.id)
+    users = Accounts.list_users()
 
-    # Get workouts for the create modal
-    workouts = Library.list_workouts_for_user(user_id)
-
-    # Get participants data for leaderboards
-    challenge_participants =
-      load_challenge_participants(my_challenges ++ Enum.map(challenge_invites, & &1.challenge))
-
-    socket =
-      socket
-      |> assign(:my_challenges, my_challenges)
-      |> assign(:challenge_invites, challenge_invites)
-      |> assign(:friends, friends)
-      |> assign(:active_tab, "my_challenges")
-      |> assign(:show_create_modal, false)
-      |> assign(:show_complete_modal, false)
-      |> assign(:completing_participant_id, nil)
-      |> assign(:selected_workout, nil)
-      |> assign(:selected_friends, [])
-      |> assign(:create_form, to_form(%{}))
-      |> assign(:complete_form, to_form(%{}))
-      |> assign(:workouts, workouts)
-      |> assign(:workout_search, "")
-      |> assign(:challenge_participants, challenge_participants)
-
-    {:ok, socket}
+    {:ok,
+     socket
+     |> assign(:page_title, "Challenges")
+     |> assign(:current_tab, "challenges")
+     |> assign(:challenges, challenges)
+     |> assign(:invites, invites)
+     |> assign(:workouts, workouts)
+     |> assign(:users, users)
+     |> assign(:show_create_modal, false)
+     |> assign(:show_complete_modal, false)
+     |> assign(:create_form, to_form(Library.change_challenge(%Challenge{})))
+     |> assign(
+       :complete_form,
+       to_form(Library.change_challenge_participant(%ChallengeParticipant{}))
+     )
+     |> assign(:challenge_participants, [])
+     |> assign(:selected_participant_ids, [])
+     |> assign(:challenge_type, "group")
+     |> assign(:completing_participant, nil)}
   end
 
   @impl true
   def handle_event("switch_tab", %{"tab" => tab}, socket) do
-    {:noreply, assign(socket, :active_tab, tab)}
+    {:noreply, assign(socket, :current_tab, tab)}
   end
 
   @impl true
   def handle_event("show_create_modal", _params, socket) do
-    IO.puts("DEBUG: show_create_modal event received")
-    user_id = socket.assigns.current_scope.user.id
-    workouts = Library.list_workouts_for_user(user_id)
-
     {:noreply,
      socket
      |> assign(:show_create_modal, true)
-     |> assign(:workouts, workouts)
-     |> assign(:workout_search, "")}
+     |> assign(:create_form, to_form(Library.change_challenge(%Challenge{})))
+     |> assign(:selected_participant_ids, [])
+     |> assign(:challenge_type, "group")}
   end
 
   @impl true
-  def handle_event("search_workouts", %{"value" => search_term}, socket) do
-    user_id = socket.assigns.current_scope.user.id
-    filtered_workouts = Library.search_workouts_for_user(user_id, search_term)
-
-    {:noreply,
-     socket
-     |> assign(:workouts, filtered_workouts)
-     |> assign(:workout_search, search_term)}
-  end
-
   def handle_event("hide_create_modal", _params, socket) do
-    {:noreply,
-     socket
-     |> assign(:show_create_modal, false)
-     |> assign(:selected_workout, nil)
-     |> assign(:selected_friends, [])
-     |> assign(:create_form, to_form(%{}))}
+    {:noreply, assign(socket, :show_create_modal, false)}
   end
 
   @impl true
-  def handle_event("select_workout", %{"workout_id" => workout_id}, socket) do
-    workout = Library.get_workout!(workout_id)
-    create_form = to_form(%{"name" => "#{workout.name} Challenge"})
-
-    {:noreply,
-     socket
-     |> assign(:selected_workout, workout)
-     |> assign(:create_form, create_form)}
+  def handle_event("set_challenge_type", %{"type" => type}, socket) do
+    {:noreply, assign(socket, :challenge_type, type)}
   end
 
   @impl true
-  def handle_event("toggle_friend", %{"friend_id" => friend_id}, socket) do
-    friend_id = String.to_integer(friend_id)
-    selected_friends = socket.assigns.selected_friends
+  def handle_event("toggle_participant", %{"user_id" => user_id}, socket) do
+    user_id = String.to_integer(user_id)
+    current_ids = socket.assigns.selected_participant_ids
 
-    updated_friends =
-      if friend_id in selected_friends do
-        List.delete(selected_friends, friend_id)
+    updated_ids =
+      if user_id in current_ids do
+        List.delete(current_ids, user_id)
       else
-        [friend_id | selected_friends]
+        [user_id | current_ids]
       end
 
-    {:noreply, assign(socket, :selected_friends, updated_friends)}
+    {:noreply, assign(socket, :selected_participant_ids, updated_ids)}
   end
 
   @impl true
-  def handle_event("validate_create", params, socket) do
-    create_form = to_form(params)
-    {:noreply, assign(socket, :create_form, create_form)}
+  def handle_event("validate_challenge", %{"challenge" => challenge_params}, socket) do
+    changeset =
+      %Challenge{}
+      |> Library.change_challenge(challenge_params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :create_form, to_form(changeset))}
   end
 
   @impl true
-  def handle_event("create_challenge", challenge_params, socket) do
-    user_id = socket.assigns.current_scope.user.id
-    selected_workout = socket.assigns.selected_workout
-    selected_friends = socket.assigns.selected_friends
+  def handle_event("create_challenge", %{"challenge" => challenge_params}, socket) do
+    current_user = socket.assigns.current_scope.user
+    challenge_type = socket.assigns.challenge_type
 
-    if selected_workout && length(selected_friends) > 0 do
-      challenge_attrs = %{
-        name: challenge_params["name"],
-        description: challenge_params["description"] || "",
-        creator_id: user_id,
-        workout_id: selected_workout.id,
-        status: "active"
-      }
+    # Add creator_id to challenge params
+    challenge_attrs = Map.put(challenge_params, "creator_id", current_user.id)
+    participant_ids = socket.assigns.selected_participant_ids
 
-      case Library.create_challenge(challenge_attrs) do
-        {:ok, challenge} ->
-          IO.puts("DEBUG: Challenge creation successful, challenge ID: #{challenge.id}")
-          IO.puts("DEBUG: Selected friends for participants: #{inspect(selected_friends)}")
+    result =
+      case challenge_type do
+        "group" ->
+          # Group challenge - creator participates too
+          Library.create_group_challenge(challenge_attrs, participant_ids)
 
-          case Library.create_challenge_participants(challenge.id, selected_friends) do
-            {:ok, participants} ->
-              IO.puts("DEBUG: Participants created successfully: #{inspect(participants)}")
-              # Refresh data
-              my_challenges = Library.list_challenges_for_user(user_id)
+        "individual" ->
+          # Individual challenge - creator doesn't participate (legacy)
+          case Library.create_challenge(challenge_attrs) do
+            {:ok, challenge} ->
+              case Library.create_challenge_participants(challenge.id, participant_ids) do
+                {:ok, _participants} -> {:ok, challenge}
+                error -> error
+              end
 
-              {:noreply,
-               socket
-               |> assign(:my_challenges, my_challenges)
-               |> assign(:show_create_modal, false)
-               |> assign(:selected_workout, nil)
-               |> assign(:selected_friends, [])
-               |> assign(:create_form, to_form(%{}))
-               |> put_flash(:info, "Challenge created successfully!")}
-
-            {:error, error} ->
-              IO.puts("DEBUG: Failed to create participants, error: #{inspect(error)}")
-              {:noreply, put_flash(socket, :error, "Failed to invite participants")}
+            error ->
+              error
           end
-
-        {:error, changeset} ->
-          IO.puts("DEBUG: Failed to create challenge, changeset: #{inspect(changeset)}")
-          {:noreply, put_flash(socket, :error, "Failed to create challenge")}
       end
-    else
-      {:noreply, put_flash(socket, :error, "Please select a workout and at least one friend")}
+
+    case result do
+      {:ok, _challenge} ->
+        current_user = socket.assigns.current_scope.user
+        challenges = Library.list_challenges_for_user(current_user.id)
+
+        {:noreply,
+         socket
+         |> assign(:challenges, challenges)
+         |> assign(:show_create_modal, false)
+         |> put_flash(:info, "Challenge created successfully!")}
+
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:noreply, assign(socket, :create_form, to_form(changeset))}
+
+      {:error, _reason} ->
+        {:noreply, put_flash(socket, :error, "Failed to create challenge")}
     end
   end
 
   @impl true
-  def handle_event("accept_invite", %{"participant_id" => participant_id}, socket) do
-    participant = Repo.get!(Library.ChallengeParticipant, participant_id)
+  def handle_event("accept_challenge", %{"participant_id" => participant_id}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
 
     case Library.update_challenge_participant(participant, %{status: "accepted"}) do
       {:ok, _updated_participant} ->
-        user_id = socket.assigns.current_scope.user.id
-        challenge_invites = Library.list_challenge_invites_for_user(user_id)
+        current_user = socket.assigns.current_scope.user
+        invites = Library.list_challenge_invites_for_user(current_user.id)
 
         {:noreply,
          socket
-         |> assign(:challenge_invites, challenge_invites)
+         |> assign(:invites, invites)
          |> put_flash(:info, "Challenge accepted!")}
 
       {:error, _changeset} ->
-        IO.puts("DEBUG: Failed to accept challenge")
         {:noreply, put_flash(socket, :error, "Failed to accept challenge")}
     end
   end
 
   @impl true
+  def handle_event("decline_challenge", %{"participant_id" => participant_id}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+
+    case Library.update_challenge_participant(participant, %{status: "declined"}) do
+      {:ok, _updated_participant} ->
+        current_user = socket.assigns.current_scope.user
+        invites = Library.list_challenge_invites_for_user(current_user.id)
+
+        {:noreply,
+         socket
+         |> assign(:invites, invites)
+         |> put_flash(:info, "Challenge declined")}
+
+      {:error, _changeset} ->
+        {:noreply, put_flash(socket, :error, "Failed to decline challenge")}
+    end
+  end
+
+  @impl true
   def handle_event("complete_challenge", %{"participant_id" => participant_id}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+
     {:noreply,
      socket
      |> assign(:show_complete_modal, true)
-     |> assign(:completing_participant_id, participant_id)
-     |> assign(:complete_form, to_form(%{}))}
+     |> assign(:completing_participant, participant)
+     |> assign(:complete_form, to_form(Library.change_challenge_participant(participant)))}
   end
 
   @impl true
@@ -201,130 +191,121 @@ defmodule RepRivalsWeb.ChallengesLive do
     {:noreply,
      socket
      |> assign(:show_complete_modal, false)
-     |> assign(:completing_participant_id, nil)
-     |> assign(:complete_form, to_form(%{}))}
+     |> assign(:completing_participant, nil)}
   end
 
   @impl true
-  def handle_event("validate_complete", params, socket) do
-    complete_form = to_form(params)
-    {:noreply, assign(socket, :complete_form, complete_form)}
+  def handle_event("validate_completion", %{"challenge_participant" => params}, socket) do
+    participant = socket.assigns.completing_participant
+
+    changeset =
+      participant
+      |> Library.change_challenge_participant(params)
+      |> Map.put(:action, :validate)
+
+    {:noreply, assign(socket, :complete_form, to_form(changeset))}
   end
 
   @impl true
-  def handle_event("submit_completion", completion_params, socket) do
-    participant_id = socket.assigns.completing_participant_id
-    participant = Library.get_challenge_participant!(participant_id)
+  def handle_event("submit_completion", %{"challenge_participant" => params}, socket) do
+    participant = socket.assigns.completing_participant
 
-    if participant.user_id == socket.assigns.current_scope.user.id do
-      case Library.update_challenge_participant(participant, %{
-             status: "completed",
-             result_value: completion_params["result_value"],
-             result_unit: completion_params["result_unit"],
-             result_notes: completion_params["result_notes"],
-             completed_at: DateTime.utc_now()
-           }) do
-        {:ok, _updated_participant} ->
-          # Broadcast update to all participants
-          Phoenix.PubSub.broadcast(
-            RepRivals.PubSub,
-            "challenge_#{participant.challenge_id}",
-            :challenge_updated
-          )
+    completion_params =
+      params
+      |> Map.put("status", "completed")
+      |> Map.put("completed_at", NaiveDateTime.utc_now())
 
-          {:noreply,
-           socket
-           |> assign(:show_complete_modal, false)
-           |> assign(:completing_participant_id, nil)
-           |> assign(:complete_form, to_form(%{}))
-           |> put_flash(:info, "Challenge completed successfully!")
-           |> load_challenge_data()}
-
-        {:error, _changeset} ->
-          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
-      end
-    else
-      {:noreply, put_flash(socket, :error, "Unauthorized")}
-    end
-  end
-
-  @impl true
-  def handle_event("decline_invite", %{"participant_id" => participant_id}, socket) do
-    participant = Repo.get!(Library.ChallengeParticipant, participant_id)
-
-    case Library.update_challenge_participant(participant, %{status: "declined"}) do
+    case Library.update_challenge_participant(participant, completion_params) do
       {:ok, _updated_participant} ->
-        user_id = socket.assigns.current_scope.user.id
-        challenge_invites = Library.list_challenge_invites_for_user(user_id)
+        current_user = socket.assigns.current_scope.user
+        invites = Library.list_challenge_invites_for_user(current_user.id)
 
         {:noreply,
          socket
-         |> assign(:challenge_invites, challenge_invites)
-         |> put_flash(:info, "Challenge declined")}
+         |> assign(:invites, invites)
+         |> assign(:show_complete_modal, false)
+         |> assign(:completing_participant, nil)
+         |> put_flash(:info, "Challenge completed!")}
 
-      {:error, _changeset} ->
-        IO.puts("DEBUG: Failed to decline challenge")
-        {:noreply, put_flash(socket, :error, "Failed to decline challenge")}
+      {:error, changeset} ->
+        {:noreply, assign(socket, :complete_form, to_form(changeset))}
     end
   end
 
-  defp format_date(datetime) do
-    Calendar.strftime(datetime, "%b %d")
+  # PubSub event handlers
+  @impl true
+  def handle_info({:challenge_created, _challenge}, socket) do
+    current_user = socket.assigns.current_scope.user
+    challenges = Library.list_challenges_for_user(current_user.id)
+    invites = Library.list_challenge_invites_for_user(current_user.id)
+
+    {:noreply,
+     socket
+     |> assign(:challenges, challenges)
+     |> assign(:invites, invites)}
   end
 
-  defp get_challenge_status(challenge) do
-    total_participants = length(challenge.participants)
-    completed_participants = Enum.count(challenge.participants, &(&1.status == "completed"))
+  @impl true
+  def handle_info({:participants_invited, _participants}, socket) do
+    current_user = socket.assigns.current_scope.user
+    invites = Library.list_challenge_invites_for_user(current_user.id)
 
-    cond do
-      completed_participants == 0 ->
-        "⏳ Pending"
+    {:noreply, assign(socket, :invites, invites)}
+  end
 
-      completed_participants < total_participants ->
-        "🟡 #{completed_participants}/#{total_participants} Done"
+  @impl true
+  def handle_info({:participant_updated, _participant}, socket) do
+    current_user = socket.assigns.current_scope.user
+    invites = Library.list_challenge_invites_for_user(current_user.id)
 
-      true ->
-        "✅ Complete"
+    {:noreply, assign(socket, :invites, invites)}
+  end
+
+  @impl true
+  def handle_info(_, socket), do: {:noreply, socket}
+
+  # Helper functions
+  defp format_date(date) when is_nil(date), do: "Not set"
+
+  defp format_date(date) do
+    Calendar.strftime(date, "%b %d, %Y")
+  end
+
+  defp participant_status_display("invited"), do: "⏳ Invited"
+  defp participant_status_display("accepted"), do: "✅ Accepted"
+  defp participant_status_display("completed"), do: "🏁 Complete"
+  defp participant_status_display("declined"), do: "❌ Declined"
+  defp participant_status_display(_), do: "❓ Unknown"
+
+  defp challenge_status_display("active"), do: "🟢 Active"
+  defp challenge_status_display("completed"), do: "🏁 Completed"
+  defp challenge_status_display("expired"), do: "⏰ Expired"
+  defp challenge_status_display(_), do: "❓ Unknown"
+
+  defp format_result_with_unit(result_value, result_unit) when is_nil(result_value) do
+    "No result yet"
+  end
+
+  defp format_result_with_unit(result_value, result_unit) do
+    formatted_value =
+      case result_value do
+        %Decimal{} ->
+          result_value
+          |> Decimal.to_string()
+          |> String.replace(~r/\.?0+$/, "")
+
+        _ ->
+          to_string(result_value)
+      end
+
+    case result_unit do
+      nil -> formatted_value
+      "" -> formatted_value
+      unit -> "#{formatted_value} #{unit}"
     end
   end
 
-  defp get_participant_status(participant) do
-    case participant.status do
-      "invited" -> "⏳ Invited"
-      "accepted" -> "🟡 Accepted"
-      "completed" -> "✅ Complete"
-      "declined" -> "❌ Declined"
-    end
-  end
-
-  defp load_challenge_data(socket) do
-    user_id = socket.assigns.current_scope.user.id
-    my_challenges = Library.list_challenges_for_user(user_id)
-    challenge_invites = Library.list_challenge_invites_for_user(user_id)
-
-    challenge_participants =
-      load_challenge_participants(my_challenges ++ Enum.map(challenge_invites, & &1.challenge))
-
-    socket
-    |> assign(:my_challenges, my_challenges)
-    |> assign(:challenge_invites, challenge_invites)
-    |> assign(:challenge_participants, challenge_participants)
-  end
-
-  defp load_challenge_participants(challenges) do
-    Enum.reduce(challenges, %{}, fn challenge, acc ->
-      participants =
-        if challenge.participants do
-          challenge.participants
-        else
-          []
-        end
-
-      Map.put(acc, challenge.id, participants)
-    end)
-  end
-
-  defp friend_selected?(friend_id, selected_friends) do
-    friend_id in selected_friends
+  defp user_is_selected?(user_id, selected_ids) do
+    user_id in selected_ids
   end
 end
