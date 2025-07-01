@@ -168,13 +168,27 @@
                       </button>
                     </div>
                   <% invite.status == "accepted" -> %>
+                    <!-- Workout Description -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                      <h4 class="font-semibold text-blue-900 mb-2">
+                        🏋️ Workout: {invite.challenge.workout.name}
+                      </h4>
+                      <div class="text-sm text-blue-800 mb-2">
+                        <strong>Type:</strong> {invite.challenge.workout.metric}
+                      </div>
+                      <div class="bg-blue-100 rounded-lg p-3">
+                        <h5 class="font-medium text-blue-900 mb-1">Workout Description:</h5>
+                        <pre class="text-blue-800 whitespace-pre-wrap text-sm font-mono">{invite.challenge.workout.description}</pre>
+                      </div>
+                    </div>
+
                     <div class="flex space-x-3">
                       <button
                         phx-click="complete_challenge"
                         phx-value-participant_id={invite.id}
                         class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
                       >
-                        Complete Challenge
+                        Begin Challenge
                       </button>
                     </div>
                   <% invite.status == "completed" -> %>
