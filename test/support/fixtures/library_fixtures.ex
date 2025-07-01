@@ -15,7 +15,7 @@ defmodule RepRivals.LibraryFixtures do
       |> Enum.into(%{
         name: "Test Workout",
         description: "A test workout description",
-        metric: "time",
+        metric: "For Time",
         user_id: 1
       })
       |> Library.create_workout()
@@ -53,7 +53,7 @@ defmodule RepRivals.LibraryFixtures do
         user_id: 1,
         status: "invited"
       })
-      |> Library.create_challenge_participant()
+      |> Library.create_challenge_participants()
 
     participant
   end
