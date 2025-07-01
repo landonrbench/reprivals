@@ -162,6 +162,124 @@
                   </div>
                 <% end %>
                 
+<!-- Complete Challenge Button for Accepted Participants -->
+                <%= if invite.status == "accepted" && invite.user_id == @current_scope.user.id do %>
+                  <%= if Map.get(assigns, :completing_participant_id) == invite.id do %>
+                    <!-- Challenge Completion Form -->
+                    <div class="mt-4 p-4 bg-gray-700 rounded-lg">
+                      <h4 class="text-white font-medium mb-3">Complete Challenge</h4>
+                      <.form for={%{}} id="complete-form" phx-submit="complete_challenge">
+                        <input type="hidden" name="participant_id" value={invite.id} />
+
+                        <div class="mb-3">
+                          <label class="block text-sm font-medium text-gray-300 mb-1">
+                            Result Value
+                          </label>
+                          <input
+                            type="text"
+                            name="result_value"
+                            placeholder={
+                              case invite.challenge.workout.metric do
+                                "time" -> "e.g., 15:30"
+                                "reps" -> "e.g., 150"
+                                "weight" -> "e.g., 225"
+                                "distance" -> "e.g., 5.2"
+                                _ -> "Enter result"
+                              end
+                            }
+                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-sm font-medium text-gray-300 mb-1">
+                            Unit
+                          </label>
+                          <input
+                            type="text"
+                            name="result_unit"
+                            value={
+                              case invite.challenge.workout.metric do
+                                "time" -> "minutes"
+                                "reps" -> "reps"
+                                "weight" -> "lbs"
+                                "distance" -> "miles"
+                                _ -> ""
+                              end
+                            }
+                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                            required
+                          />
+                        </div>
+
+                        <div class="mb-3">
+                          <label class="block text-sm font-medium text-gray-300 mb-1">
+                            Notes (Optional)
+                          </label>
+                          <textarea
+                            name="result_notes"
+                            placeholder="How did it feel? Any modifications?"
+                            rows="2"
+                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          ></textarea>
+                        </div>
+
+                        <div class="flex gap-2">
+                          <button
+                            type="button"
+                            phx-click="hide_complete_form"
+                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Submit Result
+                          </button>
+                        </div>
+                      </.form>
+                    </div>
+                  <% else %>
+                    <!-- Show Complete Button -->
+                    <div class="mt-4">
+                      <button
+                        phx-click="show_complete_form"
+                        phx-value-participant_id={invite.id}
+                        class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        Complete Challenge
+                      </button>
+                    </div>
+                  <% end %>
+                <% end %>
+                
+<!-- Show Completed Result -->
+                <%= if invite.status == "completed" && invite.user_id == @current_scope.user.id do %>
+                  <div class="mt-4 p-3 bg-green-800 bg-opacity-30 border border-green-600 rounded-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fill-rule="evenodd"
+                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                      <span class="text-green-400 font-medium text-sm">Challenge Completed!</span>
+                    </div>
+                    <div class="text-white">
+                      <strong>Result:</strong> {invite.result_value} {invite.result_unit}
+                    </div>
+                    <%= if invite.result_notes do %>
+                      <div class="text-gray-300 text-sm mt-1">
+                        <strong>Notes:</strong> {invite.result_notes}
+                      </div>
+                    <% end %>
+                  </div>
+                <% end %>
+                
 <!-- Leaderboard -->
                 <div class="mt-3 pt-3 border-t border-gray-700">
                   <p class="text-xs text-gray-500 mb-2">Leaderboard:</p>
@@ -429,7 +547,7 @@
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"
             />
           </svg>
           <span class="text-xs">Challenges</span>
