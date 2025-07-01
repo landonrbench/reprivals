@@ -406,6 +406,127 @@ defmodule RepRivals.Library do
   end
 
   @doc """
+  Gets a single challenge participant.
+
+  ## Examples
+
+      iex> get_challenge_participant!(123)
+      %ChallengeParticipant{}
+
+  """
+  def get_challenge_participant!(id) do
+    ChallengeParticipant
+    |> where([cp], cp.id == ^id)
+    |> preload([:challenge, :user])
+    |> Repo.one!()
+  end
+
+  @doc """
+  Returns the list of completed challenges (where all participants have finished).
+  Results are sorted by completion order for leaderboard display.
+
+  ## Examples
+
+      iex> list_completed_challenges()
+      [%Challenge{}, ...]
+
+  """
+  def list_completed_challenges do
+    # Get challenges where all participants have status "completed"
+    challenge_ids_with_all_completed =
+      from(c in Challenge,
+        left_join: p in ChallengeParticipant,
+        on: p.challenge_id == c.id,
+        group_by: c.id,
+        having: fragment("COUNT(*) = COUNT(CASE WHEN ? = 'completed' THEN 1 END)", p.status),
+        select: c.id
+      )
+      |> Repo.all()
+
+    # Fetch the full challenge data with participants sorted by result
+    Challenge
+    |> where([c], c.id in ^challenge_ids_with_all_completed)
+    |> preload([
+      :workout,
+      :creator,
+      participants:
+        ^from(p in ChallengeParticipant,
+          order_by: [asc: p.result_value],
+          preload: [:user]
+        )
+    ])
+    |> order_by([c], desc: c.inserted_at)
+    |> Repo.all()
+    |> Enum.map(&sort_challenge_participants/1)
+  end
+
+  # Private function to sort participants by their result based on workout metric
+  defp sort_challenge_participants(%Challenge{workout: %{metric: "For Time"}} = challenge) do
+    # For time-based workouts, lowest time wins (ascending order)
+    sorted_participants =
+      challenge.participants
+      |> Enum.sort_by(fn p ->
+        case p.result_value do
+          # Put nil results at the end
+          nil -> 999_999
+          value -> Decimal.to_float(value)
+        end
+      end)
+
+    %{challenge | participants: sorted_participants}
+  end
+
+  defp sort_challenge_participants(%Challenge{workout: %{metric: "AMRAP"}} = challenge) do
+    # For AMRAP workouts, highest score wins (descending order)
+    sorted_participants =
+      challenge.participants
+      |> Enum.sort_by(
+        fn p ->
+          case p.result_value do
+            # Put nil results at the end
+            nil -> -1
+            value -> Decimal.to_float(value)
+          end
+        end,
+        :desc
+      )
+
+    %{challenge | participants: sorted_participants}
+  end
+
+  defp sort_challenge_participants(%Challenge{workout: %{metric: "Max Load"}} = challenge) do
+    # For max load workouts, highest weight wins (descending order)
+    sorted_participants =
+      challenge.participants
+      |> Enum.sort_by(
+        fn p ->
+          case p.result_value do
+            # Put nil results at the end
+            nil -> -1
+            value -> Decimal.to_float(value)
+          end
+        end,
+        :desc
+      )
+
+    %{challenge | participants: sorted_participants}
+  end
+
+  defp sort_challenge_participants(challenge) do
+    # Default sorting for unknown metrics (ascending by result_value)
+    sorted_participants =
+      challenge.participants
+      |> Enum.sort_by(fn p ->
+        case p.result_value do
+          nil -> 999_999
+          value -> Decimal.to_float(value)
+        end
+      end)
+
+    %{challenge | participants: sorted_participants}
+  end
+
+  @doc """
   Creates a challenge.
 
   ## Examples
