@@ -32,7 +32,12 @@ defmodule RepRivals.AccountsFixtures do
     user = unconfirmed_user_fixture(attrs)
 
     # Confirm the user by updating the confirmed_at field directly
-    user = RepRivals.Repo.update!(Ecto.Changeset.change(user, confirmed_at: DateTime.utc_now()))
+    user =
+      RepRivals.Repo.update!(
+        Ecto.Changeset.change(user,
+          confirmed_at: DateTime.utc_now() |> DateTime.truncate(:second)
+        )
+      )
 
     user
   end
