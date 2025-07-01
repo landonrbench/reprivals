@@ -107,8 +107,8 @@
 
                       <div>
                         <div class="font-semibold text-gray-900">{participant.user.email}</div>
-                        <%= if participant.notes && participant.notes != "" do %>
-                          <div class="text-sm text-gray-600 mt-1">{participant.notes}</div>
+                        <%= if participant.result_notes && participant.result_notes != "" do %>
+                          <div class="text-sm text-gray-600 mt-1">{participant.result_notes}</div>
                         <% end %>
                       </div>
                     </div>
