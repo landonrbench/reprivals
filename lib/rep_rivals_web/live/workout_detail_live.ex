@@ -188,7 +188,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> assign(:show_delete_result_modal, false)
-         |> put_flash(:error, "Failed to delete result"))
+         |> put_flash(:error, "Failed to delete result")}
     end
   end
 
@@ -292,13 +292,13 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> put_flash(:info, "Workout deleted successfully!")
-         |> push_navigate(to: ~p"/"))}
+         |> push_navigate(to: ~p"/")}
 
       {:error, _changeset} ->
         {:noreply,
          socket
          |> assign(show_delete_modal: false)
-         |> put_flash(:error, "Failed to delete workout"))
+         |> put_flash(:error, "Failed to delete workout")}
     end
   end
 
@@ -383,4 +383,3 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
     user_id in selected_ids
   end
 end
-
