@@ -272,15 +272,16 @@ defmodule RepRivalsWeb.ChallengesLive do
     end
   end
 
-  defp load_challenge_data(socket) do\
-    user_id = socket.assigns.current_scope.user.id\
-    my_challenges = Library.list_challenges_for_user(user_id)\
-    challenge_invites = Library.list_challenge_invites_for_user(user_id)\
-    \
-    socket\
-    |> assign(:my_challenges, my_challenges)\
-    |> assign(:challenge_invites, challenge_invites)\
+  defp load_challenge_data(socket) do
+    user_id = socket.assigns.current_scope.user.id
+    my_challenges = Library.list_challenges_for_user(user_id)
+    challenge_invites = Library.list_challenge_invites_for_user(user_id)
+
+    socket
+    |> assign(:my_challenges, my_challenges)
+    |> assign(:challenge_invites, challenge_invites)
   end
+
   defp friend_selected?(friend_id, selected_friends) do
     friend_id in selected_friends
   end
