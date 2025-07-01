@@ -155,22 +155,634 @@ defmodule RepRivalsWeb.ChallengesLive do
 
   @impl true
   def handle_event("accept_challenge", %{"participant_id" => participant_id}, socket) do
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
     participant = Repo.get!(Library.ChallengeParticipant, participant_id)
 
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
     case Library.update_challenge_participant(participant, %{status: "accepted"}) do
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
       {:ok, _updated_participant} ->
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
         user_id = socket.assigns.current_scope.user.id
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
         challenge_invites = Library.list_challenge_invites_for_user(user_id)
 
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
         {:noreply,
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
          socket
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
          |> assign(:challenge_invites, challenge_invites)
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
          |> put_flash(:info, "Challenge accepted!")}
 
-      {:error, _changeset} ->
-        IO.puts("DEBUG: Failed to accept challenge")
-        {:noreply, put_flash(socket, :error, "Failed to accept challenge")}
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
     end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+      {:error, _changeset} ->
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+        IO.puts("DEBUG: Failed to accept challenge")
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+        {:noreply, put_flash(socket, :error, "Failed to accept challenge")}
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
+    end
+
+  def handle_event("complete_challenge", %{"participant_id" => participant_id, "result_value" => result_value, "result_unit" => result_unit, "result_notes" => result_notes}, socket) do
+    participant = Library.get_challenge_participant!(participant_id)
+    
+    if participant.user_id == socket.assigns.current_user.id do
+      case Library.update_challenge_participant(participant, %{
+        status: "completed",
+        result_value: result_value,
+        result_unit: result_unit,
+        result_notes: result_notes,
+        completed_at: DateTime.utc_now()
+      }) do
+        {:ok, _updated_participant} ->
+          # Broadcast update to all participants
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenge_#{participant.challenge_id}", :challenge_updated)
+          
+          {:noreply,
+           socket
+           |> put_flash(:info, "Challenge completed successfully!")
+           |> load_challenge_data()}
+        
+        {:error, _changeset} ->
+          {:noreply, put_flash(socket, :error, "Could not complete challenge")}
+      end
+    else
+      {:noreply, put_flash(socket, :error, "Unauthorized")}
+    end
+  end
+
+  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
+    {:noreply, assign(socket, :completing_participant_id, participant_id)}
+  end
+
+  def handle_event("hide_complete_form", _params, socket) do
+    {:noreply, assign(socket, :completing_participant_id, nil)}
+  end
   end
 
   @impl true
