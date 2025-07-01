@@ -22,26 +22,14 @@
         <button
           phx-click="switch_tab"
           phx-value-tab="my_challenges"
-          class={[
-            "flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors",
-            if(@active_tab == "my_challenges",
-              do: "bg-orange-500 text-white",
-              else: "text-gray-400 hover:text-white"
-            )
-          ]}
+          class={"flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors " <> if @active_tab == "my_challenges", do: "bg-orange-500 text-white", else: "text-gray-400 hover:text-white"}
         >
           My Challenges
         </button>
         <button
           phx-click="switch_tab"
           phx-value-tab="invites"
-          class={[
-            "flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors",
-            if(@active_tab == "invites",
-              do: "bg-orange-500 text-white",
-              else: "text-gray-400 hover:text-white"
-            )
-          ]}
+          class={"flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors " <> if @active_tab == "invites", do: "bg-orange-500 text-white", else: "text-gray-400 hover:text-white"}
         >
           Invites
         </button>
@@ -51,50 +39,7 @@
 <!-- My Challenges Tab -->
     <%= if @active_tab == "my_challenges" do %>
       <div class="px-4 pb-20">
-        <%= if length(@my_challenges) > 0 do %>
-          <div class="space-y-3">
-            <%= for challenge <- @my_challenges do %>
-              <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 class="font-medium text-white">{challenge.name}</h3>
-                    <p class="text-gray-400 text-sm mt-1">{challenge.workout.name}</p>
-                    <p class="text-gray-500 text-xs mt-1">
-                      Created {format_date(challenge.inserted_at)}
-                    </p>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-xs font-medium text-gray-300">
-                      {get_challenge_status(challenge)}
-                    </span>
-                  </div>
-                </div>
-                
-<!-- Participants -->
-                <div class="mt-3 pt-3 border-t border-gray-700">
-                  <p class="text-xs text-gray-500 mb-2">Participants:</p>
-                  <div class="flex flex-wrap gap-2">
-                    <%= for participant <- challenge.participants do %>
-                      <div class="flex items-center gap-2 bg-gray-700 rounded-full px-3 py-1">
-                        <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                          <span class="text-white text-xs font-bold">
-                            {String.upcase(participant.user.email |> String.at(0))}
-                          </span>
-                        </div>
-                        <span class="text-xs text-gray-300">
-                          {participant.user.email |> String.split("@") |> hd()}
-                        </span>
-                        <span class="text-xs">
-                          {get_participant_status(participant)}
-                        </span>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
+        <%= if @my_challenges == [] do %>
           <div class="text-center py-12">
             <div class="text-gray-500 mb-4">
               <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,8 +47,9 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-                />
+                  d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"
+                >
+                </path>
               </svg>
             </div>
             <p class="text-gray-400 mb-2">No challenges created yet</p>
@@ -114,6 +60,107 @@
               Create your first challenge
             </button>
           </div>
+        <% else %>
+          <%= for challenge <- @my_challenges do %>
+            <div class="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-white mb-1">{challenge.name}</h3>
+                  <p class="text-sm text-gray-400 mb-2">{challenge.workout.name}</p>
+                  <p class="text-xs text-gray-500">
+                    From you • {Calendar.strftime(challenge.inserted_at, "%b %d")}
+                  </p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <%= case challenge.status do %>
+                    <% "active" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        🟢 Active
+                      </span>
+                    <% "completed" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        ✅ Complete
+                      </span>
+                    <% "expired" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ⏰ Expired
+                      </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <%= if challenge.description do %>
+                <p class="text-gray-300 text-sm mb-3">{challenge.description}</p>
+              <% end %>
+              
+<!-- Participants -->
+              <div class="space-y-2">
+                <h4 class="text-sm font-medium text-gray-300">Participants</h4>
+                <%= for participant <- Map.get(@challenge_participants, challenge.id, []) do %>
+                  <div class="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                    <div class="flex items-center space-x-3">
+                      <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {String.first(String.upcase(participant.user.email))}
+                      </div>
+                      <span class="text-gray-200 text-sm">{participant.user.email}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      <%= case participant.status do %>
+                        <% "invited" -> %>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            ⏳ Invited
+                          </span>
+                        <% "accepted" -> %>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            👍 Accepted
+                          </span>
+                        <% "completed" -> %>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ✅ Done
+                          </span>
+                          <%= if participant.result_value do %>
+                            <span class="text-xs text-gray-400">
+                              {participant.result_value} {participant.result_unit}
+                            </span>
+                          <% end %>
+                        <% "declined" -> %>
+                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            ❌ Declined
+                          </span>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+              
+<!-- Leaderboard for completed challenges -->
+              <%= if challenge.status == "completed" and length(Map.get(@challenge_participants, challenge.id, [])) > 0 do %>
+                <div class="mt-4 pt-4 border-t border-gray-600">
+                  <h4 class="text-sm font-medium text-gray-300 mb-3">Leaderboard</h4>
+                  <div class="space-y-2">
+                    <%= for {participant, index} <- Map.get(@challenge_participants, challenge.id, []) |> Enum.filter(&(&1.status == "completed" and &1.result_value)) |> Enum.sort_by(& &1.result_value) |> Enum.with_index(1) do %>
+                      <div class="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                        <div class="flex items-center space-x-3">
+                          <div class={"w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium " <> case index do 1 -> "bg-yellow-500"; 2 -> "bg-gray-400"; 3 -> "bg-yellow-600"; _ -> "bg-gray-600" end}>
+                            {index}
+                          </div>
+                          <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                            {String.first(String.upcase(participant.user.email))}
+                          </div>
+                          <span class="text-gray-200 text-sm">{participant.user.email}</span>
+                        </div>
+                        <div class="text-right">
+                          <div class="text-white font-medium text-sm">
+                            {participant.result_value} {participant.result_unit}
+                          </div>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>
@@ -121,200 +168,7 @@
 <!-- Challenge Invites Tab -->
     <%= if @active_tab == "invites" do %>
       <div class="px-4 pb-20">
-        <%= if length(@challenge_invites) > 0 do %>
-          <div class="space-y-3">
-            <%= for invite <- @challenge_invites do %>
-              <div class="bg-gray-800 border border-gray-700 rounded-lg p-4">
-                <div class="flex items-start justify-between">
-                  <div class="flex-1">
-                    <h3 class="font-medium text-white">{invite.challenge.name}</h3>
-                    <p class="text-gray-400 text-sm mt-1">{invite.challenge.workout.name}</p>
-                    <p class="text-gray-500 text-xs mt-1">
-                      From {invite.challenge.creator.email |> String.split("@") |> hd()} • {format_date(
-                        invite.challenge.inserted_at
-                      )}
-                    </p>
-                  </div>
-                  <div class="text-right">
-                    <span class="text-xs font-medium text-gray-300">
-                      {get_participant_status(invite)}
-                    </span>
-                  </div>
-                </div>
-                
-<!-- Action Buttons for Invites -->
-                <%= if invite.status == "invited" do %>
-                  <div class="mt-4 flex gap-2">
-                    <button
-                      phx-click="accept_challenge"
-                      phx-value-participant_id={invite.id}
-                      class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      Accept
-                    </button>
-                    <button
-                      phx-click="decline_challenge"
-                      phx-value-participant_id={invite.id}
-                      class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      Decline
-                    </button>
-                  </div>
-                <% end %>
-                
-<!-- Complete Challenge Button for Accepted Participants -->
-                <%= if invite.status == "accepted" && invite.user_id == @current_scope.user.id do %>
-                  <%= if Map.get(assigns, :completing_participant_id) == invite.id do %>
-                    <!-- Challenge Completion Form -->
-                    <div class="mt-4 p-4 bg-gray-700 rounded-lg">
-                      <h4 class="text-white font-medium mb-3">Complete Challenge</h4>
-                      <.form for={%{}} id="complete-form" phx-submit="complete_challenge">
-                        <input type="hidden" name="participant_id" value={invite.id} />
-
-                        <div class="mb-3">
-                          <label class="block text-sm font-medium text-gray-300 mb-1">
-                            Result Value
-                          </label>
-                          <input
-                            type="text"
-                            name="result_value"
-                            placeholder={
-                              case invite.challenge.workout.metric do
-                                "time" -> "e.g., 15:30"
-                                "reps" -> "e.g., 150"
-                                "weight" -> "e.g., 225"
-                                "distance" -> "e.g., 5.2"
-                                _ -> "Enter result"
-                              end
-                            }
-                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label class="block text-sm font-medium text-gray-300 mb-1">
-                            Unit
-                          </label>
-                          <input
-                            type="text"
-                            name="result_unit"
-                            value={
-                              case invite.challenge.workout.metric do
-                                "time" -> "minutes"
-                                "reps" -> "reps"
-                                "weight" -> "lbs"
-                                "distance" -> "miles"
-                                _ -> ""
-                              end
-                            }
-                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                            required
-                          />
-                        </div>
-
-                        <div class="mb-3">
-                          <label class="block text-sm font-medium text-gray-300 mb-1">
-                            Notes (Optional)
-                          </label>
-                          <textarea
-                            name="result_notes"
-                            placeholder="How did it feel? Any modifications?"
-                            rows="2"
-                            class="w-full bg-gray-600 border border-gray-500 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          ></textarea>
-                        </div>
-
-                        <div class="flex gap-2">
-                          <button
-                            type="button"
-                            phx-click="hide_complete_form"
-                            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="submit"
-                            class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-2 px-3 rounded-lg text-sm font-medium transition-colors"
-                          >
-                            Submit Result
-                          </button>
-                        </div>
-                      </.form>
-                    </div>
-                  <% else %>
-                    <!-- Show Complete Button -->
-                    <div class="mt-4">
-                      <button
-                        phx-click="show_complete_form"
-                        phx-value-participant_id={invite.id}
-                        class="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
-                      >
-                        Complete Challenge
-                      </button>
-                    </div>
-                  <% end %>
-                <% end %>
-                
-<!-- Show Completed Result -->
-                <%= if invite.status == "completed" && invite.user_id == @current_scope.user.id do %>
-                  <div class="mt-4 p-3 bg-green-800 bg-opacity-30 border border-green-600 rounded-lg">
-                    <div class="flex items-center gap-2 mb-2">
-                      <svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                          fill-rule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      <span class="text-green-400 font-medium text-sm">Challenge Completed!</span>
-                    </div>
-                    <div class="text-white">
-                      <strong>Result:</strong> {invite.result_value} {invite.result_unit}
-                    </div>
-                    <%= if invite.result_notes do %>
-                      <div class="text-gray-300 text-sm mt-1">
-                        <strong>Notes:</strong> {invite.result_notes}
-                      </div>
-                    <% end %>
-                  </div>
-                <% end %>
-                
-<!-- Leaderboard -->
-                <div class="mt-3 pt-3 border-t border-gray-700">
-                  <p class="text-xs text-gray-500 mb-2">Leaderboard:</p>
-                  <div class="space-y-2">
-                    <%= for participant <- invite.challenge.participants do %>
-                      <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                          <div class="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-xs font-bold">
-                              {String.upcase(participant.user.email |> String.at(0))}
-                            </span>
-                          </div>
-                          <span class="text-sm text-gray-300">
-                            {participant.user.email |> String.split("@") |> hd()}
-                          </span>
-                        </div>
-                        <div class="text-right">
-                          <%= if participant.status == "completed" && participant.result_value do %>
-                            <span class="text-sm font-medium text-green-400">
-                              {participant.result_value} {participant.result_unit}
-                            </span>
-                          <% else %>
-                            <span class="text-xs text-gray-500">
-                              {get_participant_status(participant)}
-                            </span>
-                          <% end %>
-                        </div>
-                      </div>
-                    <% end %>
-                  </div>
-                </div>
-              </div>
-            <% end %>
-          </div>
-        <% else %>
+        <%= if @challenge_invites == [] do %>
           <div class="text-center py-12">
             <div class="text-gray-500 mb-4">
               <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -322,190 +176,335 @@
                   stroke-linecap="round"
                   stroke-linejoin="round"
                   stroke-width="2"
-                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-                />
+                  d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-2.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 009.586 13H7"
+                >
+                </path>
               </svg>
             </div>
-            <p class="text-gray-400">No challenge invites</p>
+            <p class="text-gray-400 mb-2">No pending invites</p>
+            <p class="text-gray-500 text-sm">
+              When friends invite you to challenges, they'll appear here
+            </p>
           </div>
+        <% else %>
+          <%= for invite <- @challenge_invites do %>
+            <div class="bg-gray-800 rounded-lg p-4 mb-4 border border-gray-700">
+              <div class="flex items-start justify-between mb-3">
+                <div class="flex-1">
+                  <h3 class="text-lg font-semibold text-white mb-1">{invite.challenge.name}</h3>
+                  <p class="text-sm text-gray-400 mb-2">{invite.challenge.workout.name}</p>
+                  <p class="text-xs text-gray-500">
+                    From {invite.challenge.creator.email} • {Calendar.strftime(
+                      invite.challenge.inserted_at,
+                      "%b %d"
+                    )}
+                  </p>
+                </div>
+                <div class="flex items-center space-x-2">
+                  <%= case invite.status do %>
+                    <% "invited" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        ⏳ Invited
+                      </span>
+                    <% "accepted" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        👍 Accepted
+                      </span>
+                    <% "completed" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        ✅ Complete
+                      </span>
+                    <% "declined" -> %>
+                      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ❌ Declined
+                      </span>
+                  <% end %>
+                </div>
+              </div>
+
+              <%= if invite.challenge.description do %>
+                <p class="text-gray-300 text-sm mb-3">{invite.challenge.description}</p>
+              <% end %>
+              
+<!-- Action buttons based on status -->
+              <%= case invite.status do %>
+                <% "invited" -> %>
+                  <div class="flex space-x-3 mt-4">
+                    <button
+                      phx-click="accept_invite"
+                      phx-value-participant-id={invite.id}
+                      class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Accept Challenge
+                    </button>
+                    <button
+                      phx-click="decline_invite"
+                      phx-value-participant-id={invite.id}
+                      class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Decline
+                    </button>
+                  </div>
+                <% "accepted" -> %>
+                  <div class="mt-4">
+                    <button
+                      phx-click="complete_challenge"
+                      phx-value-participant-id={invite.id}
+                      class="w-full bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Complete Challenge
+                    </button>
+                  </div>
+                <% "completed" -> %>
+                  <div class="mt-4 p-3 bg-gray-700 rounded-lg">
+                    <h4 class="text-sm font-medium text-gray-300 mb-2">Challenge Completed!</h4>
+                    <%= if invite.result_value do %>
+                      <p class="text-white">
+                        <strong>Result:</strong> {invite.result_value} {invite.result_unit}
+                      </p>
+                    <% end %>
+                    <%= if invite.result_notes do %>
+                      <p class="text-gray-300 text-sm mt-1">
+                        <strong>Notes:</strong> {invite.result_notes}
+                      </p>
+                    <% end %>
+                  </div>
+                  
+<!-- Show leaderboard for completed challenges -->
+                  <%= if length(Map.get(@challenge_participants, invite.challenge.id, [])) > 0 do %>
+                    <div class="mt-4 pt-4 border-t border-gray-600">
+                      <h4 class="text-sm font-medium text-gray-300 mb-3">Leaderboard</h4>
+                      <div class="space-y-2">
+                        <%= for {participant, index} <- Map.get(@challenge_participants, invite.challenge.id, []) |> Enum.filter(&(&1.status == "completed" and &1.result_value)) |> Enum.sort_by(& &1.result_value) |> Enum.with_index(1) do %>
+                          <div class="flex items-center justify-between bg-gray-700 rounded-lg p-3">
+                            <div class="flex items-center space-x-3">
+                              <div class={"w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium " <> case index do 1 -> "bg-yellow-500"; 2 -> "bg-gray-400"; 3 -> "bg-yellow-600"; _ -> "bg-gray-600" end}>
+                                {index}
+                              </div>
+                              <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                                {String.first(String.upcase(participant.user.email))}
+                              </div>
+                              <span class="text-gray-200 text-sm">{participant.user.email}</span>
+                            </div>
+                            <div class="text-right">
+                              <div class="text-white font-medium text-sm">
+                                {participant.result_value} {participant.result_unit}
+                              </div>
+                            </div>
+                          </div>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
+                <% _ -> %>
+                  <!-- Declined or other status - no actions -->
+              <% end %>
+            </div>
+          <% end %>
         <% end %>
       </div>
     <% end %>
     
 <!-- Create Challenge Modal -->
     <%= if @show_create_modal do %>
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-gray-800 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-xl font-bold text-white">Create Challenge</h2>
-              <button phx-click="hide_create_modal" class="text-gray-400 hover:text-white">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">Create Challenge</h2>
+            <button phx-click="hide_create_modal" class="text-gray-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                >
+                </path>
+              </svg>
+            </button>
+          </div>
 
-            <.form for={@challenge_form} id="challenge-form" phx-submit="create_challenge">
-              <!-- Step 1: Select Workout -->
-              <%= if is_nil(@selected_workout) do %>
-                <div class="mb-6">
-                  <h3 class="text-lg font-medium text-white mb-3">Select Workout</h3>
-                  <div class="mb-4">
-                    <input
-                      type="text"
-                      phx-keyup="search_workouts"
-                      phx-debounce="300"
-                      value={@workout_search}
-                      placeholder="Search workouts..."
-                      class="w-full bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div class="space-y-2 max-h-48 overflow-y-auto">
-                    <%= for workout <- @workouts do %>
-                      <button
-                        type="button"
-                        phx-click="select_workout"
-                        phx-value-workout_id={workout.id}
-                        class="w-full text-left p-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
-                      >
-                        <div class="font-medium text-white">{workout.name}</div>
-                        <div class="text-sm text-gray-400">
-                          {case workout.metric do
-                            "time" -> "For Time"
-                            "reps" -> "For Reps"
-                            "weight" -> "For Load"
-                            "distance" -> "For Distance"
-                            _ -> "Workout"
-                          end}
+          <.form
+            for={@create_form}
+            phx-submit="create_challenge"
+            phx-change="validate_create"
+            id="create-challenge-form"
+          >
+            <div class="space-y-4">
+              <div>
+                <.input
+                  field={@create_form[:name]}
+                  type="text"
+                  label="Challenge Name"
+                  placeholder="Enter challenge name"
+                  class="w-full bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <.input
+                  field={@create_form[:description]}
+                  type="textarea"
+                  label="Description (Optional)"
+                  placeholder="Add a description..."
+                  class="w-full bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Workout</label>
+                <select
+                  name="challenge[workout_id]"
+                  class="w-full bg-gray-700 border-gray-600 text-white rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                >
+                  <option value="">Select a workout...</option>
+                  <%= for workout <- @workouts do %>
+                    <option value={workout.id}>{workout.name} ({workout.metric})</option>
+                  <% end %>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-300 mb-2">Invite Friends</label>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                  <%= for friend <- @friends do %>
+                    <label class="flex items-center space-x-3 p-2 bg-gray-700 rounded-lg hover:bg-gray-600 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        name="challenge[friend_ids][]"
+                        value={friend.id}
+                        class="rounded border-gray-600 text-orange-500 focus:ring-orange-500"
+                      />
+                      <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          {String.first(String.upcase(friend.email))}
                         </div>
-                      </button>
-                    <% end %>
-                  </div>
-                </div>
-              <% else %>
-                <!-- Step 2: Configure Challenge -->
-                <div class="mb-4">
-                  <h3 class="text-lg font-medium text-white mb-3">Challenge Details</h3>
-                  <div class="bg-gray-700 rounded-lg p-3 mb-4">
-                    <div class="font-medium text-white">{@selected_workout.name}</div>
-                    <div class="text-sm text-gray-400">
-                      {case @selected_workout.metric do
-                        "time" -> "For Time"
-                        "reps" -> "For Reps"
-                        "weight" -> "For Load"
-                        "distance" -> "For Distance"
-                        _ -> "Workout"
-                      end}
-                    </div>
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">
-                      Challenge Name
+                        <span class="text-gray-200 text-sm">{friend.email}</span>
+                      </div>
                     </label>
-                    <.input
-                      field={@challenge_form[:name]}
-                      type="text"
-                      placeholder="Enter challenge name"
-                      class="w-full bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
-                  </div>
-
-                  <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-300 mb-2">
-                      Description (Optional)
-                    </label>
-                    <.input
-                      field={@challenge_form[:description]}
-                      type="textarea"
-                      placeholder="Add a description..."
-                      class="w-full bg-gray-700 border border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                      rows="3"
-                    />
-                  </div>
-                </div>
-                
-<!-- Step 3: Select Friends -->
-                <div class="mb-6">
-                  <h3 class="text-lg font-medium text-white mb-3">Invite Friends</h3>
-                  <%= if length(@friends) > 0 do %>
-                    <div class="space-y-2 max-h-48 overflow-y-auto">
-                      <%= for friend <- @friends do %>
-                        <button
-                          type="button"
-                          phx-click="toggle_friend"
-                          phx-value-friend_id={friend.id}
-                          class={[
-                            "w-full flex items-center gap-3 p-3 rounded-lg transition-colors",
-                            if(friend_selected?(friend.id, @selected_friends),
-                              do: "bg-orange-600",
-                              else: "bg-gray-700 hover:bg-gray-600"
-                            )
-                          ]}
-                        >
-                          <div class="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm font-bold">
-                              {String.upcase(friend.email |> String.at(0))}
-                            </span>
-                          </div>
-                          <span class="text-white">
-                            {friend.email |> String.split("@") |> hd()}
-                          </span>
-                          <%= if friend_selected?(friend.id, @selected_friends) do %>
-                            <div class="ml-auto">
-                              <svg
-                                class="w-5 h-5 text-white"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fill-rule="evenodd"
-                                  d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                  clip-rule="evenodd"
-                                />
-                              </svg>
-                            </div>
-                          <% end %>
-                        </button>
-                      <% end %>
-                    </div>
-                  <% else %>
-                    <p class="text-gray-400 text-sm">
-                      No friends added yet.
-                      <.link navigate={~p"/friends"} class="text-orange-500 hover:text-orange-400">
-                        Add friends
-                      </.link>
-                      to create challenges.
-                    </p>
                   <% end %>
                 </div>
-                
-<!-- Action Buttons -->
-                <div class="flex gap-3">
-                  <button
-                    type="button"
-                    phx-click="hide_create_modal"
-                    class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg font-medium transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={length(@selected_friends) == 0}
-                    class="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2 px-4 rounded-lg font-medium transition-colors"
-                  >
-                    Create Challenge
-                  </button>
-                </div>
-              <% end %>
-            </.form>
+                <%= if @friends == [] do %>
+                  <p class="text-gray-500 text-sm">
+                    No friends to invite.
+                    <.link navigate="/friends" class="text-orange-500 hover:text-orange-400">
+                      Add some friends
+                    </.link>
+                    first!
+                  </p>
+                <% end %>
+              </div>
+
+              <div>
+                <.input
+                  field={@create_form[:expires_at]}
+                  type="datetime-local"
+                  label="Expires At (Optional)"
+                  class="w-full bg-gray-700 border-gray-600 text-white rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+            </div>
+
+            <div class="flex space-x-3 mt-6">
+              <button
+                type="button"
+                phx-click="hide_create_modal"
+                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                Create Challenge
+              </button>
+            </div>
+          </.form>
+        </div>
+      </div>
+    <% end %>
+    
+<!-- Complete Challenge Modal -->
+    <%= if @show_complete_modal do %>
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-white">Complete Challenge</h2>
+            <button phx-click="hide_complete_modal" class="text-gray-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                >
+                </path>
+              </svg>
+            </button>
           </div>
+
+          <.form
+            for={@complete_form}
+            phx-submit="submit_completion"
+            phx-change="validate_complete"
+            id="complete-challenge-form"
+          >
+            <div class="space-y-4">
+              <div>
+                <.input
+                  field={@complete_form[:result_value]}
+                  type="number"
+                  step="0.01"
+                  label="Your Result"
+                  placeholder="Enter your time/score"
+                  class="w-full bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <.input
+                  field={@complete_form[:result_unit]}
+                  type="text"
+                  label="Unit"
+                  placeholder="e.g., minutes, reps, points"
+                  class="w-full bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+
+              <div>
+                <.input
+                  field={@complete_form[:result_notes]}
+                  type="textarea"
+                  label="Notes (Optional)"
+                  placeholder="How did it go? Any thoughts..."
+                  class="w-full bg-gray-700 border-gray-600 text-white placeholder-gray-400 rounded-lg px-3 py-2 focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50"
+                  error_class="border-red-400 focus:border-red-500 focus:ring focus:ring-red-300"
+                />
+              </div>
+            </div>
+
+            <div class="flex space-x-3 mt-6">
+              <button
+                type="button"
+                phx-click="hide_complete_modal"
+                class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors"
+              >
+                Submit Result
+              </button>
+            </div>
+          </.form>
         </div>
       </div>
     <% end %>
@@ -514,8 +513,8 @@
     <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700">
       <div class="flex items-center justify-around py-2">
         <.link
-          navigate={~p"/notebook"}
-          class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-orange-500 transition-colors"
+          navigate="/notebook"
+          class="flex flex-col items-center py-2 px-3 text-gray-400 hover:text-orange-500 transition-colors"
         >
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -523,39 +522,54 @@
               stroke-linejoin="round"
               stroke-width="2"
               d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-            />
+            >
+            </path>
           </svg>
           <span class="text-xs">Notebook</span>
         </.link>
 
         <.link
-          navigate={~p"/"}
-          class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-orange-500 transition-colors"
+          navigate="/"
+          class="flex flex-col items-center py-2 px-3 text-gray-400 hover:text-orange-500 transition-colors"
         >
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path>
           </svg>
           <span class="text-xs">Home</span>
         </.link>
 
+        <.link navigate="/challenges" class="flex flex-col items-center py-2 px-3 text-orange-500">
+          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 713.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"
+            >
+            </path>
+          </svg>
+          <span class="text-xs">Challenges</span>
+        </.link>
+
         <.link
-          navigate={~p"/challenges"}
-          class="flex flex-col items-center py-2 px-4 text-orange-500"
+          navigate="/leaderboard"
+          class="flex flex-col items-center py-2 px-3 text-gray-400 hover:text-orange-500 transition-colors"
         >
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
               stroke-width="2"
-              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 713.138-3.138z"
-            />
+              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+            >
+            </path>
           </svg>
-          <span class="text-xs">Challenges</span>
+          <span class="text-xs">Leaderboard</span>
         </.link>
 
         <.link
-          navigate={~p"/friends"}
-          class="flex flex-col items-center py-2 px-4 text-gray-400 hover:text-orange-500 transition-colors"
+          navigate="/friends"
+          class="flex flex-col items-center py-2 px-3 text-gray-400 hover:text-orange-500 transition-colors"
         >
           <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -563,7 +577,8 @@
               stroke-linejoin="round"
               stroke-width="2"
               d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-            />
+            >
+            </path>
           </svg>
           <span class="text-xs">Friends</span>
         </.link>
