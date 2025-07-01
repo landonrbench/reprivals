@@ -41,11 +41,12 @@ defmodule RepRivalsWeb.LeaderboardLive do
 
   defp format_result_with_unit(result_value, result_unit) do
     formatted_value =
-      if Decimal.decimal?(result_value) do
+      case result_value do
         result_value
         |> Decimal.to_string()
+      %Decimal{} ->
         |> String.replace(~r/\.?0+$/, "")
-      else
+      _ ->
         to_string(result_value)
       end
 
