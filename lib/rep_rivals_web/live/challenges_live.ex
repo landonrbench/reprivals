@@ -35,7 +35,6 @@ defmodule RepRivalsWeb.ChallengesLive do
      )
      |> assign(:challenge_participants, [])
      |> assign(:selected_participant_ids, [])
-     |> assign(:challenge_type, "group")
      |> assign(:completing_participant, nil)}
   end
 
@@ -50,18 +49,12 @@ defmodule RepRivalsWeb.ChallengesLive do
      socket
      |> assign(:show_create_modal, true)
      |> assign(:create_form, to_form(Library.change_challenge(%Challenge{})))
-     |> assign(:selected_participant_ids, [])
-     |> assign(:challenge_type, "group")}
+     |> assign(:selected_participant_ids, [])}
   end
 
   @impl true
   def handle_event("hide_create_modal", _params, socket) do
     {:noreply, assign(socket, :show_create_modal, false)}
-  end
-
-  @impl true
-  def handle_event("set_challenge_type", %{"type" => type}, socket) do
-    {:noreply, assign(socket, :challenge_type, type)}
   end
 
   @impl true
@@ -92,33 +85,13 @@ defmodule RepRivalsWeb.ChallengesLive do
   @impl true
   def handle_event("create_challenge", %{"challenge" => challenge_params}, socket) do
     current_user = socket.assigns.current_scope.user
-    challenge_type = socket.assigns.challenge_type
 
     # Add creator_id to challenge params
     challenge_attrs = Map.put(challenge_params, "creator_id", current_user.id)
     participant_ids = socket.assigns.selected_participant_ids
 
-    result =
-      case challenge_type do
-        "group" ->
-          # Group challenge - creator participates too
-          Library.create_group_challenge(challenge_attrs, participant_ids)
-
-        "individual" ->
-          # Individual challenge - creator doesn't participate (legacy)
-          case Library.create_challenge(challenge_attrs) do
-            {:ok, challenge} ->
-              case Library.create_challenge_participants(challenge.id, participant_ids) do
-                {:ok, _participants} -> {:ok, challenge}
-                error -> error
-              end
-
-            error ->
-              error
-          end
-      end
-
-    case result do
+    # Always create group challenges where creator participates
+    case Library.create_group_challenge(challenge_attrs, participant_ids) do
       {:ok, _challenge} ->
         current_user = socket.assigns.current_scope.user
         challenges = Library.list_challenges_for_user(current_user.id)
