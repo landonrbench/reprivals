@@ -24,6 +24,10 @@ defmodule RepRivalsWeb.ChallengesLive do
     # Get workouts for the create modal
     workouts = Library.list_workouts_for_user(user_id)
 
+    # Get participants data for leaderboards
+    challenge_participants =
+      load_challenge_participants(my_challenges ++ Enum.map(challenge_invites, & &1.challenge))
+
     socket =
       socket
       |> assign(:my_challenges, my_challenges)
@@ -31,11 +35,15 @@ defmodule RepRivalsWeb.ChallengesLive do
       |> assign(:friends, friends)
       |> assign(:active_tab, "my_challenges")
       |> assign(:show_create_modal, false)
+      |> assign(:show_complete_modal, false)
+      |> assign(:completing_participant_id, nil)
       |> assign(:selected_workout, nil)
       |> assign(:selected_friends, [])
-      |> assign(:challenge_form, to_form(%{}))
+      |> assign(:create_form, to_form(%{}))
+      |> assign(:complete_form, to_form(%{}))
       |> assign(:workouts, workouts)
       |> assign(:workout_search, "")
+      |> assign(:challenge_participants, challenge_participants)
 
     {:ok, socket}
   end
@@ -75,18 +83,18 @@ defmodule RepRivalsWeb.ChallengesLive do
      |> assign(:show_create_modal, false)
      |> assign(:selected_workout, nil)
      |> assign(:selected_friends, [])
-     |> assign(:challenge_form, to_form(%{}))}
+     |> assign(:create_form, to_form(%{}))}
   end
 
   @impl true
   def handle_event("select_workout", %{"workout_id" => workout_id}, socket) do
     workout = Library.get_workout!(workout_id)
-    challenge_form = to_form(%{"name" => "#{workout.name} Challenge"})
+    create_form = to_form(%{"name" => "#{workout.name} Challenge"})
 
     {:noreply,
      socket
      |> assign(:selected_workout, workout)
-     |> assign(:challenge_form, challenge_form)}
+     |> assign(:create_form, create_form)}
   end
 
   @impl true
@@ -102,6 +110,12 @@ defmodule RepRivalsWeb.ChallengesLive do
       end
 
     {:noreply, assign(socket, :selected_friends, updated_friends)}
+  end
+
+  @impl true
+  def handle_event("validate_create", params, socket) do
+    create_form = to_form(params)
+    {:noreply, assign(socket, :create_form, create_form)}
   end
 
   @impl true
@@ -136,7 +150,7 @@ defmodule RepRivalsWeb.ChallengesLive do
                |> assign(:show_create_modal, false)
                |> assign(:selected_workout, nil)
                |> assign(:selected_friends, [])
-               |> assign(:challenge_form, to_form(%{}))
+               |> assign(:create_form, to_form(%{}))
                |> put_flash(:info, "Challenge created successfully!")}
 
             {:error, error} ->
@@ -154,7 +168,7 @@ defmodule RepRivalsWeb.ChallengesLive do
   end
 
   @impl true
-  def handle_event("accept_challenge", %{"participant_id" => participant_id}, socket) do
+  def handle_event("accept_invite", %{"participant_id" => participant_id}, socket) do
     participant = Repo.get!(Library.ChallengeParticipant, participant_id)
 
     case Library.update_challenge_participant(participant, %{status: "accepted"}) do
@@ -174,24 +188,40 @@ defmodule RepRivalsWeb.ChallengesLive do
   end
 
   @impl true
-  def handle_event(
-        "complete_challenge",
-        %{
-          "participant_id" => participant_id,
-          "result_value" => result_value,
-          "result_unit" => result_unit,
-          "result_notes" => result_notes
-        },
-        socket
-      ) do
+  def handle_event("complete_challenge", %{"participant_id" => participant_id}, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_complete_modal, true)
+     |> assign(:completing_participant_id, participant_id)
+     |> assign(:complete_form, to_form(%{}))}
+  end
+
+  @impl true
+  def handle_event("hide_complete_modal", _params, socket) do
+    {:noreply,
+     socket
+     |> assign(:show_complete_modal, false)
+     |> assign(:completing_participant_id, nil)
+     |> assign(:complete_form, to_form(%{}))}
+  end
+
+  @impl true
+  def handle_event("validate_complete", params, socket) do
+    complete_form = to_form(params)
+    {:noreply, assign(socket, :complete_form, complete_form)}
+  end
+
+  @impl true
+  def handle_event("submit_completion", completion_params, socket) do
+    participant_id = socket.assigns.completing_participant_id
     participant = Library.get_challenge_participant!(participant_id)
 
     if participant.user_id == socket.assigns.current_scope.user.id do
       case Library.update_challenge_participant(participant, %{
              status: "completed",
-             result_value: result_value,
-             result_unit: result_unit,
-             result_notes: result_notes,
+             result_value: completion_params["result_value"],
+             result_unit: completion_params["result_unit"],
+             result_notes: completion_params["result_notes"],
              completed_at: DateTime.utc_now()
            }) do
         {:ok, _updated_participant} ->
@@ -204,6 +234,9 @@ defmodule RepRivalsWeb.ChallengesLive do
 
           {:noreply,
            socket
+           |> assign(:show_complete_modal, false)
+           |> assign(:completing_participant_id, nil)
+           |> assign(:complete_form, to_form(%{}))
            |> put_flash(:info, "Challenge completed successfully!")
            |> load_challenge_data()}
 
@@ -215,16 +248,8 @@ defmodule RepRivalsWeb.ChallengesLive do
     end
   end
 
-  def handle_event("show_complete_form", %{"participant_id" => participant_id}, socket) do
-    {:noreply, assign(socket, :completing_participant_id, participant_id)}
-  end
-
-  def handle_event("hide_complete_form", _params, socket) do
-    {:noreply, assign(socket, :completing_participant_id, nil)}
-  end
-
   @impl true
-  def handle_event("decline_challenge", %{"participant_id" => participant_id}, socket) do
+  def handle_event("decline_invite", %{"participant_id" => participant_id}, socket) do
     participant = Repo.get!(Library.ChallengeParticipant, participant_id)
 
     case Library.update_challenge_participant(participant, %{status: "declined"}) do
@@ -277,9 +302,26 @@ defmodule RepRivalsWeb.ChallengesLive do
     my_challenges = Library.list_challenges_for_user(user_id)
     challenge_invites = Library.list_challenge_invites_for_user(user_id)
 
+    challenge_participants =
+      load_challenge_participants(my_challenges ++ Enum.map(challenge_invites, & &1.challenge))
+
     socket
     |> assign(:my_challenges, my_challenges)
     |> assign(:challenge_invites, challenge_invites)
+    |> assign(:challenge_participants, challenge_participants)
+  end
+
+  defp load_challenge_participants(challenges) do
+    Enum.reduce(challenges, %{}, fn challenge, acc ->
+      participants =
+        if challenge.participants do
+          challenge.participants
+        else
+          []
+        end
+
+      Map.put(acc, challenge.id, participants)
+    end)
   end
 
   defp friend_selected?(friend_id, selected_friends) do
