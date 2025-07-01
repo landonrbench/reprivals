@@ -17,7 +17,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         workout_fixture(%{
           name: "Test Workout",
           description: "5 rounds for time",
-          metric: "time",
+          metric: "For Time",
           user_id: creator.id
         })
 
@@ -80,7 +80,6 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
     test "invitee can accept challenge invitation", %{
       conn: conn,
       invitee: invitee,
-      challenge: challenge,
       invitee_participant: participant
     } do
       # Verify initial participant status
@@ -115,7 +114,6 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
     test "accepted participant can see completion interface", %{
       conn: conn,
       invitee: invitee,
-      challenge: challenge,
       invitee_participant: participant
     } do
       # First accept the challenge
@@ -153,7 +151,6 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
     test "participant can complete challenge with results", %{
       conn: conn,
       invitee: invitee,
-      challenge: challenge,
       invitee_participant: participant
     } do
       # Accept the challenge first
