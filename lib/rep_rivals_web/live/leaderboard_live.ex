@@ -10,7 +10,23 @@ defmodule RepRivalsWeb.LeaderboardLive do
     {:ok,
      socket
      |> assign(:completed_challenges, completed_challenges)
+     |> assign(:expanded_challenges, MapSet.new())
      |> assign(:page_title, "Leaderboard")}
+  end
+
+  @impl true
+  def handle_event("toggle_challenge", %{"challenge_id" => challenge_id}, socket) do
+    challenge_id = String.to_integer(challenge_id)
+    expanded_challenges = socket.assigns.expanded_challenges
+
+    updated_expanded =
+      if MapSet.member?(expanded_challenges, challenge_id) do
+        MapSet.delete(expanded_challenges, challenge_id)
+      else
+        MapSet.put(expanded_challenges, challenge_id)
+      end
+
+    {:noreply, assign(socket, :expanded_challenges, updated_expanded)}
   end
 
   @impl true
@@ -29,6 +45,10 @@ defmodule RepRivalsWeb.LeaderboardLive do
 
   @impl true
   def handle_info(_, socket), do: {:noreply, socket}
+
+  defp challenge_expanded?(challenge_id, expanded_challenges) do
+    MapSet.member?(expanded_challenges, challenge_id)
+  end
 
   defp place_emoji(1), do: "🥇"
   defp place_emoji(2), do: "🥈"
