@@ -62,4 +62,3 @@ defmodule RepRivals.Repo.Migrations.StandardizeChallengeResultUnits do
     """
   end
 end
-</
