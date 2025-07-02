@@ -1,20 +1,25 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-6">
+  <div class="min-h-screen bg-gray-900 text-white pb-20">
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-8">
-      <div class="text-center">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">🏆 Challenge Leaderboards</h1>
-        <p class="text-lg text-gray-600">See how you stack up against your friends!</p>
+    <div class="px-4 py-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white">🏆 Challenge Leaderboards</h1>
+          <p class="text-gray-400 text-sm mt-1">See how you stack up against your friends!</p>
+        </div>
+        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center">
+          <span class="text-white font-bold text-lg">🏆</span>
+        </div>
       </div>
     </div>
     
 <!-- Completed Challenges -->
-    <div class="max-w-6xl mx-auto space-y-8">
+    <div class="px-4 space-y-6">
       <%= if @completed_challenges == [] do %>
-        <div class="text-center py-16">
+        <div class="text-center py-12">
           <div class="text-6xl mb-4">🏃‍♂️</div>
-          <h2 class="text-2xl font-bold text-gray-700 mb-2">No Completed Challenges Yet</h2>
-          <p class="text-gray-500 mb-6">Challenge your friends to see leaderboards here!</p>
+          <h2 class="text-xl font-bold text-white mb-2">No Completed Challenges Yet</h2>
+          <p class="text-gray-400 mb-6">Challenge your friends to see leaderboards here!</p>
           <.link
             navigate={~p"/challenges"}
             class="inline-flex items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
@@ -32,12 +37,12 @@
         </div>
       <% else %>
         <%= for challenge <- @completed_challenges do %>
-          <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
+          <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
             <!-- Challenge Header -->
-            <div class="bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-4">
+            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <h2 class="text-2xl font-bold text-white">{challenge.workout.name}</h2>
+                  <h2 class="text-xl font-bold text-white">{challenge.workout.name}</h2>
                   <p class="text-orange-100 mt-1">
                     {metric_description(challenge.workout.metric)}
                   </p>
@@ -50,16 +55,16 @@
             </div>
             
 <!-- Workout Details -->
-            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">Workout Description</h3>
-              <div class="bg-white rounded-lg p-4 border border-gray-200">
-                <pre class="text-gray-700 whitespace-pre-wrap font-mono text-sm"><%= challenge.workout.description %></pre>
+            <div class="px-6 py-4 bg-gray-700 border-b border-gray-600">
+              <h3 class="text-lg font-semibold text-white mb-2">Workout Description</h3>
+              <div class="bg-gray-800 rounded-lg p-4 border border-gray-600">
+                <pre class="text-gray-300 whitespace-pre-wrap font-mono text-sm"><%= challenge.workout.description %></pre>
               </div>
             </div>
             
 <!-- Leaderboard -->
             <div class="px-6 py-6">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
                 <svg
                   class="w-5 h-5 mr-2 text-orange-500"
                   fill="none"
@@ -79,19 +84,19 @@
               <div class="space-y-3">
                 <%= for {participant, index} <- Enum.with_index(challenge.participants, 1) do %>
                   <div class={[
-                    "flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-orange-300 transition-colors",
+                    "flex items-center justify-between p-4 rounded-lg border transition-colors",
                     cond do
                       index == 1 ->
-                        "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300"
+                        "bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border-yellow-500/50"
 
                       index == 2 ->
-                        "bg-gradient-to-r from-gray-50 to-slate-50 border-gray-300"
+                        "bg-gradient-to-r from-gray-800/50 to-slate-800/50 border-gray-500/50"
 
                       index == 3 ->
-                        "bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300"
+                        "bg-gradient-to-r from-orange-900/30 to-amber-900/30 border-orange-500/50"
 
                       true ->
-                        "bg-white"
+                        "bg-gray-700/50 border-gray-600"
                     end
                   ]}>
                     <div class="flex items-center space-x-4">
@@ -106,15 +111,15 @@
                       </div>
 
                       <div>
-                        <div class="font-semibold text-gray-900">{participant.user.email}</div>
+                        <div class="font-semibold text-white">{participant.user.email}</div>
                         <%= if participant.result_notes && participant.result_notes != "" do %>
-                          <div class="text-sm text-gray-600 mt-1">{participant.result_notes}</div>
+                          <div class="text-sm text-gray-400 mt-1">{participant.result_notes}</div>
                         <% end %>
                       </div>
                     </div>
 
                     <div class="text-right">
-                      <div class="text-lg font-bold text-gray-900">
+                      <div class="text-lg font-bold text-white">
                         {format_result_with_unit(
                           participant.result_value,
                           participant.result_unit
