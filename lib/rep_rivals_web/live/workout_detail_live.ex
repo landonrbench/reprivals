@@ -40,6 +40,11 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
+  def handle_event("back", _params, socket) do
+    {:noreply, push_navigate(socket, to: ~p"/notebook")}
+  end
+
+  @impl true
   def handle_event("show_log_form", _params, socket) do
     # Set default date to today
     today = Date.utc_today()
