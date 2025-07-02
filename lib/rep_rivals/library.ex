@@ -398,6 +398,70 @@ defmodule RepRivals.Library do
       %Challenge{participants: [%ChallengeParticipant{}, ...]}
 
   """
+  @doc """\
+  Gets a single challenge.\
+\
+  Raises `Ecto.NoResultsError` if the Challenge does not exist.\
+\
+  ## Examples\
+\
+      iex> get_challenge!(123)\
+      %Challenge{}\
+\
+      iex> get_challenge!(456)\
+      ** (Ecto.NoResultsError)\
+\
+  """\
+  def get_challenge!(id), do: Repo.get!(Challenge, id)\
+\
+  @doc """\
+  Returns the list of challenge participants for a specific challenge.\
+\
+  ## Examples\
+\
+      iex> list_challenge_participants(challenge_id)\
+      [%ChallengeParticipant{}, ...]\
+\
+  """\
+  def list_challenge_participants(challenge_id) do\
+    ChallengeParticipant\
+    |> where([cp], cp.challenge_id == ^challenge_id)\
+    |> preload([:user])\
+    |> Repo.all()\
+  end\
+\
+  @doc """\
+  Updates a challenge.\
+\
+  ## Examples\
+\
+      iex> update_challenge(challenge, %{field: new_value})\
+      {:ok, %Challenge{}}\
+\
+      iex> update_challenge(challenge, %{field: bad_value})\
+      {:error, %Ecto.Changeset{}}\
+\
+  """\
+  def update_challenge(%Challenge{} = challenge, attrs) do\
+    result =\
+      challenge\
+      |> Challenge.changeset(attrs)\
+      |> Repo.update()\
+\
+    case result do\
+      {:ok, updated_challenge} ->\
+        Phoenix.PubSub.broadcast(\
+          RepRivals.PubSub,\
+          "challenges",\
+          {:challenge_updated, updated_challenge}\
+        )\
+\
+        {:ok, updated_challenge}\
+\
+      error ->\
+        error\
+    end\
+  end
   def get_challenge_with_participants!(id) do
     Challenge
     |> where([c], c.id == ^id)
