@@ -248,7 +248,7 @@
                   />
                 </div>
 
-                <%= if assigns[:workouts] do %>
+                <%= if @workouts do %>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Select Workout
@@ -274,7 +274,7 @@
                   </div>
                 <% end %>
 
-                <%= if assigns[:available_friends] do %>
+                <%= if @available_friends do %>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                       Select Friends
