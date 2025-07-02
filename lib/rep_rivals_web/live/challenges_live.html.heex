@@ -1,120 +1,92 @@
 <Layouts.app flash={@flash} current_scope={@current_scope}>
-  <div class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 px-4 py-6">
+  <div class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 pb-20">
     <!-- Header -->
-    <div class="max-w-6xl mx-auto mb-8">
-      <div class="text-center">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">🏋️ Fitness Challenges</h1>
-        <p class="text-lg text-gray-600">Challenge your friends and track your progress!</p>
-      </div>
+    <div class="pt-8 pb-6 text-center">
+      <h1 class="text-4xl font-bold text-white mb-2">💪 Challenges</h1>
+      <p class="text-purple-200">Compete with friends and track your progress</p>
     </div>
     
 <!-- Tab Navigation -->
-    <div class="max-w-6xl mx-auto mb-6">
-      <div class="bg-white rounded-lg p-1 shadow-sm border border-gray-200">
-        <div class="flex">
-          <button
-            phx-click="switch_tab"
-            phx-value-tab="challenges"
-            class={[
-              "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              if(@current_tab == "challenges",
-                do: "bg-orange-500 text-white shadow-sm",
-                else: "text-gray-600 hover:text-gray-900"
-              )
-            ]}
-          >
-            My Challenges
-          </button>
-          <button
-            phx-click="switch_tab"
-            phx-value-tab="invites"
-            class={[
-              "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              if(@current_tab == "invites",
-                do: "bg-orange-500 text-white shadow-sm",
-                else: "text-gray-600 hover:text-gray-900"
-              )
-            ]}
-          >
-            Invitations
-          </button>
-        </div>
+    <div class="max-w-md mx-auto mb-6">
+      <div class="flex bg-white/10 rounded-lg p-1">
+        <button
+          phx-click="switch_tab"
+          phx-value-tab="my_challenges"
+          class={[
+            "flex-1 py-3 px-4 rounded-md text-center font-medium transition-all duration-200",
+            if(@active_tab == "my_challenges", do: "bg-white text-purple-900", else: "text-white")
+          ]}
+        >
+          My Challenges
+        </button>
+        <button
+          phx-click="switch_tab"
+          phx-value-tab="invites"
+          class={[
+            "flex-1 py-3 px-4 rounded-md text-center font-medium transition-all duration-200",
+            if(@active_tab == "invites", do: "bg-white text-purple-900", else: "text-white")
+          ]}
+        >
+          Invitations
+        </button>
       </div>
     </div>
     
-<!-- Content -->
-    <div class="max-w-6xl mx-auto">
-      <%= if @current_tab == "challenges" do %>
+<!-- Tab Content -->
+    <div class="max-w-md mx-auto px-4">
+      <%= if @active_tab == "my_challenges" do %>
         <!-- My Challenges Tab -->
         <div class="mb-6">
           <button
             phx-click="show_create_modal"
-            class="inline-flex items-center px-6 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors shadow-sm"
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-4 px-6 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
           >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-              />
-            </svg>
-            Create Group Challenge
+            ➕ Create Group Challenge
           </button>
         </div>
-        
-<!-- Challenges List -->
+
         <%= if @challenges == [] do %>
-          <div class="text-center py-16">
+          <div class="text-center py-12">
             <div class="text-6xl mb-4">🏆</div>
-            <h2 class="text-2xl font-bold text-gray-700 mb-2">No Challenges Created Yet</h2>
-            <p class="text-gray-500 mb-6">Create your first group challenge to get started!</p>
+            <h3 class="text-xl font-semibold text-white mb-2">No Challenges Created Yet</h3>
+            <p class="text-purple-200">Create your first challenge to compete with friends!</p>
           </div>
         <% else %>
-          <div class="space-y-6">
+          <div class="space-y-4">
             <%= for challenge <- @challenges do %>
-              <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 class="text-xl font-bold text-gray-900">{challenge.name}</h3>
-                    <p class="text-gray-600 mt-1">{challenge.description}</p>
-                    <div class="flex items-center mt-2 space-x-4">
-                      <span class="text-sm text-gray-500">Workout: {challenge.workout.name}</span>
-                      <span class="text-sm">{challenge_status_display(challenge.status)}</span>
-                    </div>
+              <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/20">
+                <div class="flex justify-between items-start mb-3">
+                  <h3 class="text-lg font-semibold text-white">{challenge.name}</h3>
+                  <span class="bg-blue-500/30 text-blue-200 px-3 py-1 rounded-full text-sm">
+                    Active
+                  </span>
+                </div>
+
+                <p class="text-purple-200 text-sm mb-3">{challenge.description}</p>
+
+                <div class="bg-blue-500/20 rounded-lg p-3 mb-4">
+                  <div class="flex items-center text-blue-200 text-sm">
+                    <span class="mr-2">🏋️</span>
+                    <strong>{challenge.workout.name}</strong>
+                  </div>
+                  <div class="text-blue-300 text-xs mt-1">
+                    Type: {challenge.workout.metric}
                   </div>
                 </div>
-                
-<!-- Participants -->
-                <div class="mt-4">
-                  <h4 class="font-semibold text-gray-900 mb-2">Participants</h4>
-                  <div class="space-y-2">
-                    <%= for participant <- challenge.participants do %>
-                      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div class="flex items-center space-x-3">
-                          <div class="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center">
-                            <span class="text-white text-sm font-bold">
-                              {String.first(participant.user.email)}
-                            </span>
-                          </div>
-                          <span class="font-medium text-gray-900">{participant.user.email}</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                          <span class="text-sm">
-                            {participant_status_display(participant.status)}
-                          </span>
-                          <%= if participant.status == "completed" do %>
-                            <span class="text-sm font-medium text-gray-700">
-                              {format_result_with_unit(
-                                participant.result_value,
-                                participant.result_unit
-                              )}
-                            </span>
-                          <% end %>
-                        </div>
-                      </div>
-                    <% end %>
-                  </div>
+
+                <div class="space-y-2">
+                  <h4 class="text-white font-medium text-sm">Participants:</h4>
+                  <%= for participant <- challenge.participants do %>
+                    <div class="flex justify-between items-center bg-white/5 rounded-lg px-3 py-2">
+                      <span class="text-white text-sm">{participant.user.email}</span>
+                      <span class={[
+                        "px-2 py-1 rounded-full text-xs font-medium",
+                        challenge_status_class(participant.status)
+                      ]}>
+                        {challenge_status_text(participant.status)}
+                      </span>
+                    </div>
+                  <% end %>
                 </div>
               </div>
             <% end %>
@@ -122,114 +94,94 @@
         <% end %>
       <% else %>
         <!-- Invitations Tab -->
-        <%= if @invites == [] do %>
-          <div class="text-center py-16">
-            <div class="text-6xl mb-4">📬</div>
-            <h2 class="text-2xl font-bold text-gray-700 mb-2">No Challenge Invitations</h2>
-            <p class="text-gray-500">You'll see challenge invitations from friends here!</p>
+        <%= if @challenge_invites == [] do %>
+          <div class="text-center py-12">
+            <div class="text-6xl mb-4">📨</div>
+            <h3 class="text-xl font-semibold text-white mb-2">No Invitations</h3>
+            <p class="text-purple-200">You'll see challenge invitations from friends here!</p>
           </div>
         <% else %>
-          <div class="space-y-6">
-            <%= for invite <- @invites do %>
-              <div class="bg-white rounded-xl shadow-lg border border-gray-100 p-6">
-                <div class="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 class="text-xl font-bold text-gray-900">{invite.challenge.name}</h3>
-                    <p class="text-gray-600 mt-1">{invite.challenge.description}</p>
-                    <div class="flex items-center mt-2 space-x-4">
-                      <span class="text-sm text-gray-500">
-                        Workout: {invite.challenge.workout.name}
-                      </span>
-                      <span class="text-sm text-gray-500">
-                        By: {invite.challenge.creator.email}
-                      </span>
-                      <span class="text-sm">{participant_status_display(invite.status)}</span>
+          <div class="space-y-4">
+            <%= for invite <- @challenge_invites do %>
+              <div class="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/20">
+                <div class="flex justify-between items-start mb-3">
+                  <h3 class="text-lg font-semibold text-white">{invite.challenge.name}</h3>
+                  <span class={[
+                    "px-3 py-1 rounded-full text-sm font-medium",
+                    challenge_status_class(invite.status)
+                  ]}>
+                    {challenge_status_text(invite.status)}
+                  </span>
+                </div>
+
+                <p class="text-purple-200 text-sm mb-3">{invite.challenge.description}</p>
+                <p class="text-purple-300 text-xs mb-4">
+                  From: {invite.challenge.creator.email}
+                </p>
+
+                <%= if invite.status == "accepted" do %>
+                  <!-- Show workout description when accepted -->
+                  <div class="bg-blue-500/20 rounded-lg p-4 mb-4">
+                    <div class="flex items-center text-blue-200 mb-2">
+                      <span class="mr-2">🏋️</span>
+                      <strong>{invite.challenge.workout.name}</strong>
+                    </div>
+                    <div class="text-blue-300 text-sm mb-2">
+                      <strong>Type:</strong> {workout_metric_description(
+                        invite.challenge.workout.metric
+                      )}
+                    </div>
+                    <div class="text-blue-200 text-sm bg-blue-600/20 rounded p-3">
+                      <strong>Workout Description:</strong> <br />
+                      {invite.challenge.workout.description}
                     </div>
                   </div>
-                </div>
-                
-<!-- Challenge Actions -->
-                <%= cond do %>
-                  <% invite.status == "invited" -> %>
-                    <div class="flex space-x-3">
-                      <button
-                        phx-click="accept_challenge"
-                        phx-value-participant_id={invite.id}
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                      >
-                        Accept Challenge
-                      </button>
-                      <button
-                        phx-click="decline_challenge"
-                        phx-value-participant_id={invite.id}
-                        class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                      >
-                        Decline
-                      </button>
-                    </div>
-                  <% invite.status == "accepted" -> %>
-                    <!-- Workout Description -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                      <h4 class="font-semibold text-blue-900 mb-2">
-                        🏋️ Workout: {invite.challenge.workout.name}
-                      </h4>
-                      <div class="text-sm text-blue-800 mb-2">
-                        <strong>Type:</strong> {invite.challenge.workout.metric}
-                      </div>
-                      <div class="bg-blue-100 rounded-lg p-3">
-                        <h5 class="font-medium text-blue-900 mb-1">Workout Description:</h5>
-                        <pre class="text-blue-800 whitespace-pre-wrap text-sm font-mono">{invite.challenge.workout.description}</pre>
-                      </div>
-                    </div>
-
-                    <div class="flex space-x-3">
-                      <button
-                        phx-click="complete_challenge"
-                        phx-value-participant_id={invite.id}
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                      >
-                        Log Challenge Result
-                      </button>
-                    </div>
-                  <% invite.status == "completed" -> %>
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <div class="flex items-center">
-                        <svg
-                          class="w-5 h-5 text-green-500 mr-2"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        <span class="text-green-800 font-medium">Challenge Completed!</span>
-                      </div>
-                      <div class="mt-2 text-sm text-green-700">
-                        <p>
-                          <strong>Result:</strong>
-                          {format_result_with_unit(invite.result_value, invite.result_unit)}
-                        </p>
-                        <%= if invite.result_notes && invite.result_notes != "" do %>
-                          <p><strong>Notes:</strong> {invite.result_notes}</p>
-                        <% end %>
-                        <%= if invite.completed_at do %>
-                          <p>
-                            <strong>Completed:</strong>
-                            {Calendar.strftime(invite.completed_at, "%b %d, %Y")}
-                          </p>
-                        <% end %>
-                      </div>
-                    </div>
-                  <% true -> %>
-                    <div class="text-gray-500">
-                      Status: {participant_status_display(invite.status)}
-                    </div>
                 <% end %>
+
+                <div class="flex gap-3">
+                  <%= if invite.status == "invited" do %>
+                    <button
+                      phx-click="accept_challenge"
+                      phx-value-id={invite.id}
+                      class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                    >
+                      Accept Challenge
+                    </button>
+                    <button
+                      phx-click="decline_challenge"
+                      phx-value-id={invite.id}
+                      class="flex-1 bg-red-500 hover:bg-red-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                    >
+                      Decline
+                    </button>
+                  <% end %>
+
+                  <%= if invite.status == "accepted" do %>
+                    <button
+                      phx-click="show_complete_modal"
+                      phx-value-id={invite.id}
+                      class="flex-1 bg-purple-500 hover:bg-purple-600 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+                    >
+                      Log Challenge Result
+                    </button>
+                  <% end %>
+
+                  <%= if invite.status == "completed" do %>
+                    <div class="flex-1 text-center py-3">
+                      <div class="text-green-400 font-medium">
+                        🏆 Completed: {format_result_with_unit(
+                          invite.result_value,
+                          invite.result_unit
+                        )}
+                      </div>
+                      <%= if invite.result_notes do %>
+                        <div class="text-purple-200 text-sm mt-1">
+                          {invite.result_notes}
+                        </div>
+                      <% end %>
+                    </div>
+                  <% end %>
+                </div>
               </div>
             <% end %>
           </div>
@@ -239,262 +191,371 @@
     
 <!-- Create Challenge Modal -->
     <%= if @show_create_modal do %>
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl max-w-md w-full p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-gray-900">Create Group Challenge</h2>
-            <button phx-click="hide_create_modal" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-          
-<!-- Challenge Description -->
-          <div class="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
-            <div class="text-sm font-medium text-orange-800">Group Challenge</div>
-            <div class="text-xs text-orange-600 mt-1">
-              Everyone (including you) participates together in this workout challenge
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-900">Create Group Challenge</h2>
+              <button phx-click="close_create_modal" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  >
+                  </path>
+                </svg>
+              </button>
             </div>
-          </div>
 
-          <.form for={@create_form} phx-change="validate_challenge" phx-submit="create_challenge">
-            <div class="space-y-4">
-              <div>
-                <.input
-                  field={@create_form[:name]}
-                  type="text"
-                  label="Challenge Name"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Enter challenge name"
-                />
-              </div>
-
-              <div>
-                <.input
-                  field={@create_form[:description]}
-                  type="textarea"
-                  label="Description"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Describe the challenge"
-                  rows="3"
-                />
-              </div>
-
-              <div>
-                <.input
-                  field={@create_form[:workout_id]}
-                  type="select"
-                  label="Workout"
-                  options={[{"Select a workout", ""}] ++ Enum.map(@workouts, &{&1.name, &1.id})}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-              </div>
-              
-<!-- Friend Selection -->
-              <div>
-                <label class="text-sm font-medium text-gray-700 mb-2 block">
-                  Select Friends to Invite
-                </label>
-                <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-lg p-2">
-                  <%= for user <- @users do %>
-                    <%= if user.id != @current_scope.user.id do %>
-                      <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                        <input
-                          type="checkbox"
-                          phx-click="toggle_participant"
-                          phx-value-user_id={user.id}
-                          checked={user_is_selected?(user.id, @selected_participant_ids)}
-                          class="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
-                        />
-                        <span class="ml-2 text-sm text-gray-700">{user.email}</span>
-                      </label>
-                    <% end %>
-                  <% end %>
+            <.form for={@create_form} phx-submit="create_challenge" id="create-challenge-form">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">
+                    Challenge Name
+                  </label>
+                  <input
+                    type="text"
+                    name="challenge[name]"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                    placeholder="Enter challenge name"
+                  />
                 </div>
-              </div>
-            </div>
 
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                phx-click="hide_create_modal"
-                class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors"
-              >
-                Create Group Challenge
-              </button>
-            </div>
-          </.form>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    name="challenge[description]"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                    placeholder="Describe the challenge"
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Search Workouts
+                  </label>
+                  <input
+                    type="text"
+                    phx-keyup="search_workouts"
+                    phx-value-search={@search_query}
+                    value={@search_query}
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                    placeholder="Search your workouts..."
+                  />
+                </div>
+
+                <%= if assigns[:workouts] do %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Select Workout
+                    </label>
+                    <div class="max-h-40 overflow-y-auto space-y-2">
+                      <%= for workout <- @workouts do %>
+                        <div
+                          phx-click="select_workout"
+                          phx-value-id={workout.id}
+                          class={[
+                            "p-3 border rounded-lg cursor-pointer transition-colors",
+                            if(@selected_workout && @selected_workout.id == workout.id,
+                              do: "border-purple-500 bg-purple-50",
+                              else: "border-gray-200 hover:border-gray-300"
+                            )
+                          ]}
+                        >
+                          <div class="font-medium text-gray-900">{workout.name}</div>
+                          <div class="text-sm text-gray-600">{workout.metric}</div>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+
+                <%= if assigns[:available_friends] do %>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      Select Friends
+                    </label>
+                    <div class="max-h-40 overflow-y-auto space-y-2">
+                      <%= for friend <- @available_friends do %>
+                        <div
+                          phx-click="toggle_friend"
+                          phx-value-id={friend.id}
+                          class={[
+                            "p-3 border rounded-lg cursor-pointer transition-colors",
+                            if(friend_selected?(friend.id, @selected_friends),
+                              do: "border-green-500 bg-green-50",
+                              else: "border-gray-200 hover:border-gray-300"
+                            )
+                          ]}
+                        >
+                          <div class="flex items-center">
+                            <%= if friend_selected?(friend.id, @selected_friends) do %>
+                              <svg
+                                class="w-5 h-5 text-green-500 mr-2"
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path
+                                  fill-rule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                  clip-rule="evenodd"
+                                >
+                                </path>
+                              </svg>
+                            <% end %>
+                            <span class="text-gray-900">{friend.email}</span>
+                          </div>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  phx-click="close_create_modal"
+                  class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!form_valid?(assigns)}
+                  class={[
+                    "flex-1 px-4 py-2 rounded-lg font-medium",
+                    if(form_valid?(assigns),
+                      do: "bg-purple-500 text-white hover:bg-purple-600",
+                      else: "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    )
+                  ]}
+                >
+                  Create Challenge
+                </button>
+              </div>
+            </.form>
+          </div>
         </div>
       </div>
     <% end %>
     
 <!-- Complete Challenge Modal -->
     <%= if @show_complete_modal do %>
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl max-w-md w-full p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-bold text-gray-900">Complete Challenge</h2>
-            <button phx-click="hide_complete_modal" class="text-gray-400 hover:text-gray-600">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full">
+          <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-xl font-bold text-gray-900">Log Challenge Result</h2>
+              <button phx-click="close_complete_modal" class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  >
+                  </path>
+                </svg>
+              </button>
+            </div>
+
+            <%= if @selected_participant do %>
+              <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                <h3 class="font-medium text-gray-900">
+                  {@selected_participant.challenge.workout.name}
+                </h3>
+                <p class="text-sm text-gray-600 mt-1">
+                  {@selected_participant.challenge.workout.description}
+                </p>
+                <p class="text-sm text-blue-600 mt-2">
+                  <strong>Type:</strong> {workout_metric_description(
+                    @selected_participant.challenge.workout.metric
+                  )}
+                </p>
+              </div>
+
+              <.form
+                for={@complete_form}
+                phx-submit="complete_challenge"
+                id="complete-challenge-form"
+              >
+                <div class="space-y-4">
+                  <%= case @selected_participant.challenge.workout.metric do %>
+                    <% "For Time" -> %>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                          Time (MM:SS)
+                        </label>
+                        <div class="flex gap-2">
+                          <div class="flex-1">
+                            <input
+                              type="number"
+                              name="time_minutes"
+                              min="0"
+                              max="999"
+                              required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                              placeholder="0"
+                            />
+                            <label class="text-xs text-gray-500 mt-1">Minutes</label>
+                          </div>
+                          <div class="flex-1">
+                            <input
+                              type="number"
+                              name="time_seconds"
+                              min="0"
+                              max="59"
+                              required
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                              placeholder="0"
+                            />
+                            <label class="text-xs text-gray-500 mt-1">Seconds</label>
+                          </div>
+                        </div>
+                      </div>
+                    <% "For Reps" -> %>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                          Number of Reps
+                        </label>
+                        <input
+                          type="number"
+                          name="result_value"
+                          min="1"
+                          required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                          placeholder="Enter number of reps"
+                        />
+                      </div>
+                    <% "Weight" -> %>
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                          Weight (lbs)
+                        </label>
+                        <input
+                          type="number"
+                          name="result_value"
+                          min="1"
+                          required
+                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                          placeholder="Enter weight in pounds"
+                        />
+                      </div>
+                  <% end %>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                      Notes (Optional)
+                    </label>
+                    <textarea
+                      name="result_notes"
+                      rows="3"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-900 bg-white"
+                      placeholder="How did it go? Any notes about your performance..."
+                    ></textarea>
+                  </div>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                  <button
+                    type="button"
+                    phx-click="close_complete_modal"
+                    class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    class="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 font-medium"
+                  >
+                    Submit Result
+                  </button>
+                </div>
+              </.form>
+            <% end %>
           </div>
-
-          <.form
-            for={@complete_form}
-            phx-change="validate_completion"
-            phx-submit="submit_completion"
-          >
-            <div class="space-y-4">
-              <div>
-                <.input
-                  field={@complete_form[:result_value]}
-                  type="number"
-                  step="0.01"
-                  label="Result"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Enter your result"
-                />
-              </div>
-
-              <div>
-                <.input
-                  field={@complete_form[:result_unit]}
-                  type="text"
-                  label="Unit"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="e.g., minutes, reps, lbs"
-                />
-              </div>
-
-              <div>
-                <.input
-                  field={@complete_form[:result_notes]}
-                  type="textarea"
-                  label="Notes (optional)"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="How did it go?"
-                  rows="3"
-                />
-              </div>
-            </div>
-
-            <div class="flex justify-end space-x-3 mt-6">
-              <button
-                type="button"
-                phx-click="hide_complete_modal"
-                class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-              >
-                Complete Challenge
-              </button>
-            </div>
-          </.form>
         </div>
       </div>
     <% end %>
-    
+  </div>
+  
 <!-- Bottom Navigation -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
-      <div class="flex justify-around items-center max-w-md mx-auto">
-        <.link
-          navigate={~p"/notebook"}
-          class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors"
-        >
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-            />
-          </svg>
-          <span class="text-xs">Notebook</span>
-        </.link>
-
-        <.link
-          navigate={~p"/"}
-          class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors"
-        >
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            />
-          </svg>
-          <span class="text-xs">Home</span>
-        </.link>
-
-        <.link
-          navigate={~p"/challenges"}
-          class="flex flex-col items-center py-2 px-3 text-orange-500"
-        >
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
-            />
-          </svg>
-          <span class="text-xs font-semibold">Challenges</span>
-        </.link>
-
-        <.link
-          navigate={~p"/leaderboard"}
-          class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors"
-        >
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-            />
-          </svg>
-          <span class="text-xs">Leaderboard</span>
-        </.link>
-
-        <.link
-          navigate={~p"/friends"}
-          class="flex flex-col items-center py-2 px-3 text-gray-500 hover:text-orange-500 transition-colors"
-        >
-          <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-            />
-          </svg>
-          <span class="text-xs">Friends</span>
-        </.link>
-      </div>
-    </nav>
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+    <div class="flex justify-around py-2">
+      <!-- Notebook -->
+      <.link navigate="/notebook" class="flex flex-col items-center py-2 px-4">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          >
+          </path>
+        </svg>
+        <span class="text-xs text-gray-600 mt-1">Notebook</span>
+      </.link>
+      
+<!-- Home -->
+      <.link navigate="/" class="flex flex-col items-center py-2 px-4">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          >
+          </path>
+        </svg>
+        <span class="text-xs text-gray-600 mt-1">Home</span>
+      </.link>
+      
+<!-- Challenges -->
+      <.link navigate="/challenges" class="flex flex-col items-center py-2 px-4">
+        <svg class="w-6 h-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          >
+          </path>
+        </svg>
+        <span class="text-xs text-orange-500 font-semibold mt-1">Challenges</span>
+      </.link>
+      
+<!-- Leaderboard -->
+      <.link navigate="/leaderboard" class="flex flex-col items-center py-2 px-4">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-6a2 2 0 01-2-2z"
+          >
+          </path>
+        </svg>
+        <span class="text-xs text-gray-600 mt-1">Leaderboard</span>
+      </.link>
+      
+<!-- Friends -->
+      <.link navigate="/friends" class="flex flex-col items-center py-2 px-4">
+        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+          >
+          </path>
+        </svg>
+        <span class="text-xs text-gray-600 mt-1">Friends</span>
+      </.link>
+    </div>
   </div>
 </Layouts.app>
