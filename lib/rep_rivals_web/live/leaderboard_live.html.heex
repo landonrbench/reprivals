@@ -38,103 +38,148 @@
       <% else %>
         <%= for challenge <- @completed_challenges do %>
           <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
-            <!-- Challenge Header -->
-            <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+            <!-- Clickable Challenge Header -->
+            <button
+              phx-click="toggle_challenge"
+              phx-value-challenge_id={challenge.id}
+              class="w-full bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4 hover:from-orange-600 hover:to-orange-700 transition-all duration-200"
+            >
               <div class="flex items-center justify-between">
-                <div>
+                <div class="text-left">
                   <h2 class="text-xl font-bold text-white">{challenge.workout.name}</h2>
                   <p class="text-orange-100 mt-1">
                     {metric_description(challenge.workout.metric)}
                   </p>
                 </div>
-                <div class="text-right">
-                  <div class="text-orange-100 text-sm">Challenge by</div>
-                  <div class="text-white font-semibold">{challenge.creator.email}</div>
+                <div class="flex items-center space-x-4">
+                  <div class="text-right">
+                    <div class="text-orange-100 text-sm">Challenge by</div>
+                    <div class="text-white font-semibold">{challenge.creator.email}</div>
+                  </div>
+                  <!-- Expand/Collapse Icon -->
+                  <div class="flex items-center justify-center w-8 h-8 bg-white/20 rounded-full">
+                    <%= if challenge_expanded?(challenge.id, @expanded_challenges) do %>
+                      <svg
+                        class="w-5 h-5 text-white transform rotate-180 transition-transform duration-200"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    <% else %>
+                      <svg
+                        class="w-5 h-5 text-white transition-transform duration-200"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    <% end %>
+                  </div>
                 </div>
               </div>
-            </div>
+            </button>
             
-<!-- Workout Details -->
-            <div class="px-6 py-4 bg-gray-700 border-b border-gray-600">
-              <h3 class="text-lg font-semibold text-white mb-2">Workout Description</h3>
-              <div class="bg-gray-800 rounded-lg p-4 border border-gray-600">
-                <pre class="text-gray-300 whitespace-pre-wrap font-mono text-sm"><%= challenge.workout.description %></pre>
-              </div>
-            </div>
-            
+<!-- Collapsible Content -->
+            <%= if challenge_expanded?(challenge.id, @expanded_challenges) do %>
+              <div class="animate-fade-in">
+                <!-- Workout Details -->
+                <div class="px-6 py-4 bg-gray-700 border-b border-gray-600">
+                  <h3 class="text-lg font-semibold text-white mb-2">Workout Description</h3>
+                  <div class="bg-gray-800 rounded-lg p-4 border border-gray-600">
+                    <pre class="text-gray-300 whitespace-pre-wrap font-mono text-sm"><%= challenge.workout.description %></pre>
+                  </div>
+                </div>
+                
 <!-- Leaderboard -->
-            <div class="px-6 py-6">
-              <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
-                <svg
-                  class="w-5 h-5 mr-2 text-orange-500"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-                Results
-              </h3>
+                <div class="px-6 py-6">
+                  <h3 class="text-lg font-semibold text-white mb-4 flex items-center">
+                    <svg
+                      class="w-5 h-5 mr-2 text-orange-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                    Results
+                  </h3>
 
-              <div class="space-y-3">
-                <%= for {participant, index} <- Enum.with_index(challenge.participants, 1) do %>
-                  <div class={[
-                    "flex items-center justify-between p-4 rounded-lg border transition-colors",
-                    cond do
-                      index == 1 ->
-                        "bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border-yellow-500/50"
+                  <div class="space-y-3">
+                    <%= for {participant, index} <- Enum.with_index(challenge.participants, 1) do %>
+                      <div class={[
+                        "flex items-center justify-between p-4 rounded-lg border transition-colors",
+                        cond do
+                          index == 1 ->
+                            "bg-gradient-to-r from-yellow-900/30 to-amber-900/30 border-yellow-500/50"
 
-                      index == 2 ->
-                        "bg-gradient-to-r from-gray-800/50 to-slate-800/50 border-gray-500/50"
+                          index == 2 ->
+                            "bg-gradient-to-r from-gray-800/50 to-slate-800/50 border-gray-500/50"
 
-                      index == 3 ->
-                        "bg-gradient-to-r from-orange-900/30 to-amber-900/30 border-orange-500/50"
+                          index == 3 ->
+                            "bg-gradient-to-r from-orange-900/30 to-amber-900/30 border-orange-500/50"
 
-                      true ->
-                        "bg-gray-700/50 border-gray-600"
-                    end
-                  ]}>
-                    <div class="flex items-center space-x-4">
-                      <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 flex items-center justify-center text-white font-bold text-lg">
-                          <%= if place_emoji(index) != "" do %>
-                            <span class="text-2xl">{place_emoji(index)}</span>
-                          <% else %>
-                            {index}
+                          true ->
+                            "bg-gray-700/50 border-gray-600"
+                        end
+                      ]}>
+                        <div class="flex items-center space-x-4">
+                          <div class="flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 flex items-center justify-center text-white font-bold text-lg">
+                              <%= if place_emoji(index) != "" do %>
+                                <span class="text-2xl">{place_emoji(index)}</span>
+                              <% else %>
+                                {index}
+                              <% end %>
+                            </div>
+                          </div>
+
+                          <div>
+                            <div class="font-semibold text-white">{participant.user.email}</div>
+                            <%= if participant.result_notes && participant.result_notes != "" do %>
+                              <div class="text-sm text-gray-400 mt-1">
+                                {participant.result_notes}
+                              </div>
+                            <% end %>
+                          </div>
+                        </div>
+
+                        <div class="text-right">
+                          <div class="text-lg font-bold text-white">
+                            {format_result_with_unit(
+                              participant.result_value,
+                              participant.result_unit
+                            )}
+                          </div>
+                          <%= if participant.completed_at do %>
+                            <div class="text-xs text-gray-500">
+                              Completed {Calendar.strftime(participant.completed_at, "%b %d, %Y")}
+                            </div>
                           <% end %>
                         </div>
                       </div>
-
-                      <div>
-                        <div class="font-semibold text-white">{participant.user.email}</div>
-                        <%= if participant.result_notes && participant.result_notes != "" do %>
-                          <div class="text-sm text-gray-400 mt-1">{participant.result_notes}</div>
-                        <% end %>
-                      </div>
-                    </div>
-
-                    <div class="text-right">
-                      <div class="text-lg font-bold text-white">
-                        {format_result_with_unit(
-                          participant.result_value,
-                          participant.result_unit
-                        )}
-                      </div>
-                      <%= if participant.completed_at do %>
-                        <div class="text-xs text-gray-500">
-                          Completed {Calendar.strftime(participant.completed_at, "%b %d, %Y")}
-                        </div>
-                      <% end %>
-                    </div>
+                    <% end %>
                   </div>
-                <% end %>
+                </div>
               </div>
-            </div>
+            <% end %>
           </div>
         <% end %>
       <% end %>
