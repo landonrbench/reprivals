@@ -420,11 +420,37 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
+  @impl true
   def handle_event("validate", %{"workout_result" => result_params}, socket) do
+    # Create a more lenient validation for live typing
+    # Only validate dates that look reasonably complete (not partial dates like "0001-01-15")
+    filtered_params =
+      case Map.get(result_params, "logged_at") do
+        date_string when is_binary(date_string) ->
+          # Skip validation for clearly incomplete dates (year < 1900)
+          case String.slice(date_string, 0, 4) do
+            year_str when byte_size(year_str) == 4 ->
+              case Integer.parse(year_str) do
+                {year, _} when year >= 1900 -> result_params
+                _ -> Map.delete(result_params, "logged_at")
+              end
+
+            _ ->
+              Map.delete(result_params, "logged_at")
+          end
+
+        _ ->
+          result_params
+      end
+
     changeset =
       %WorkoutResult{}
-      |> Library.change_workout_result(result_params)
+      |> Library.change_workout_result(filtered_params)
       |> Map.put(:action, :validate)
+
+    %WorkoutResult{}
+    |> Library.change_workout_result(result_params)
+    |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, form: to_form(changeset))}
   end
