@@ -164,7 +164,11 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
-  def handle_event("create_challenge_with_result", %{"name" => name, "description" => description}, socket) do
+  def handle_event(
+        "create_challenge_with_result",
+        %{"name" => name, "description" => description},
+        socket
+      ) do
     workout = socket.assigns.workout
     user_id = socket.assigns.current_scope.user.id
     selected_friends = socket.assigns.selected_challenge_friends
@@ -293,7 +297,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> assign(:show_delete_result_modal, false)
-         |> put_flash(:error, "Failed to delete result"))
+         |> put_flash(:error, "Failed to delete result")}
     end
   end
 
@@ -403,7 +407,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> assign(show_delete_modal: false)
-         |> put_flash(:error, "Failed to delete workout"))
+         |> put_flash(:error, "Failed to delete workout")}
     end
   end
 
