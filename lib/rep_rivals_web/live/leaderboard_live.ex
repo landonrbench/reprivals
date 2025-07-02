@@ -63,6 +63,44 @@ defmodule RepRivalsWeb.LeaderboardLive do
     formatted_value =
       case result_value do
         %Decimal{} ->
+          decimal_value = Decimal.to_float(result_value)
+          format_time_or_value(decimal_value, result_unit)
+
+        value when is_number(value) ->
+          format_time_or_value(value, result_unit)
+
+        _ ->
+          to_string(result_value)
+      end
+
+    case result_unit do
+      "seconds" -> formatted_value
+      nil -> formatted_value
+      "" -> formatted_value
+      unit -> "#{formatted_value} #{unit}"
+    end
+  end
+
+  defp format_time_or_value(value, "seconds") when is_number(value) do
+    total_seconds = round(value)
+    minutes = div(total_seconds, 60)
+    seconds = rem(total_seconds, 60)
+    "#{minutes}:#{String.pad_leading(to_string(seconds), 2, "0")}"
+  end
+
+  defp format_time_or_value(value, _unit) when is_number(value) do
+    value
+    |> to_string()
+    |> String.replace(~r/\.?0+$/, "")
+  end
+
+  defp format_time_or_value(value, _unit) do
+    to_string(value)
+
+  defp format_result_with_unit(result_value, result_unit) do
+    formatted_value =
+      case result_value do
+        %Decimal{} ->
           result_value
           |> Decimal.to_string()
           |> String.replace(~r/\.?0+$/, "")
