@@ -92,7 +92,6 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
-  @impl true
   def handle_event("log_result_and_challenge", %{"workout_result" => result_params}, socket) do
     workout = socket.assigns.workout
     user_id = socket.assigns.current_scope.user.id
@@ -134,49 +133,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, form: to_form(changeset))}
     end
-    # First validate and create the workout result
-    workout = socket.assigns.workout
-    user_id = socket.assigns.current_scope.user.id
-    form_data = Phoenix.HTML.Form.params(socket.assigns.form)
-    result_params = form_data["workout_result"] || %{}
-
-    # Parse the date and set it as the logged_at datetime
-    logged_at =
-      case result_params["logged_at"] do
-        date_string when is_binary(date_string) and date_string != "" ->
-          case Date.from_iso8601(date_string) do
-            {:ok, date} -> DateTime.new!(date, ~T[12:00:00])
-            _ -> DateTime.utc_now()
-          end
-
-        _ ->
-          DateTime.utc_now()
-      end
-
-    result_params =
-      result_params
-      |> Map.put("workout_id", workout.id)
-      |> Map.put("user_id", user_id)
-      |> Map.put("logged_at", logged_at)
-
-    case Library.create_workout_result(result_params) do
-      {:ok, workout_result} ->
-        # Get available friends (all users except current user)
-        available_friends = Enum.reject(socket.assigns.users, &(&1.id == user_id))
-
-        {:noreply,
-         socket
-         |> assign(show_log_form: false)
-         |> assign(show_challenge_friends_modal: true)
-         |> assign(available_friends: available_friends)
-         |> assign(selected_challenge_friends: [])
-         |> assign(challenge_form: to_form(%{"name" => "", "description" => ""}))
-         |> assign(challenge_result: workout_result)
-         |> put_flash(:info, "Result logged! Now create a challenge for your friends.")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, form: to_form(changeset))}
-    end
+  end
 
   @impl true
   def handle_event("hide_challenge_friends_modal", _params, socket) do
@@ -397,69 +354,6 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
       {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Failed to create challenge")}
     end
-  end
-
-  @impl true
-  def handle_event("show_edit_modal", _params, socket) do
-    {:noreply, assign(socket, show_edit_modal: true)}
-  end
-
-  @impl true
-  def handle_event("hide_edit_modal", _params, socket) do
-    {:noreply, assign(socket, show_edit_modal: false)}
-  end
-
-  @impl true
-  def handle_event("update_workout", %{"workout" => workout_params}, socket) do
-    case Library.update_workout(socket.assigns.workout, workout_params) do
-      {:ok, updated_workout} ->
-        {:noreply,
-         socket
-         |> assign(:workout, updated_workout)
-         |> assign(show_edit_modal: false)
-         |> put_flash(:info, "Workout updated successfully!")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, edit_form: to_form(changeset))}
-    end
-  end
-
-  @impl true
-  def handle_event("show_delete_modal", _params, socket) do
-    {:noreply, assign(socket, show_delete_modal: true)}
-  end
-
-  @impl true
-  def handle_event("hide_delete_modal", _params, socket) do
-    {:noreply, assign(socket, show_delete_modal: false)}
-  end
-
-  @impl true
-  def handle_event("delete_workout", _params, socket) do
-    case Library.delete_workout(socket.assigns.workout) do
-      {:ok, _workout} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Workout deleted successfully!")
-         |> push_navigate(to: ~p"/")}
-
-      {:error, _changeset} ->
-        {:noreply,
-         socket
-         |> assign(show_delete_modal: false)
-         |> put_flash(:error, "Failed to delete workout")}
-    end
-  end
-
-  @impl true
-  def handle_event("back", _params, socket) do
-    {:noreply, push_navigate(socket, to: ~p"/")}
-  end
-
-  @impl true
-  def handle_info({:workout_result_created, workout_result}, socket) do
-    updated_results = [workout_result | socket.assigns.workout_results]
-    {:noreply, assign(socket, :workout_results, updated_results)}
   end
 
   defp get_log_button_text(metric) do
