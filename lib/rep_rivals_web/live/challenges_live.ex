@@ -318,8 +318,8 @@ defmodule RepRivalsWeb.ChallengesLive do
     friend_id in selected_friends
   end
 
-  defp form_valid?(socket) do
-    socket.assigns.selected_workout && socket.assigns.selected_friends != []
+  defp form_valid?(selected_workout, selected_friends) do
+    selected_workout && selected_friends != []
   end
 
   defp format_date(date) when is_nil(date), do: "Not set"
