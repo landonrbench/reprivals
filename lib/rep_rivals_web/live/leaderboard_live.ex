@@ -96,24 +96,6 @@ defmodule RepRivalsWeb.LeaderboardLive do
 
   defp format_time_or_value(value, _unit) do
     to_string(value)
-
-  defp format_result_with_unit(result_value, result_unit) do
-    formatted_value =
-      case result_value do
-        %Decimal{} ->
-          result_value
-          |> Decimal.to_string()
-          |> String.replace(~r/\.?0+$/, "")
-
-        _ ->
-          to_string(result_value)
-      end
-
-    case result_unit do
-      nil -> formatted_value
-      "" -> formatted_value
-      unit -> "#{formatted_value} #{unit}"
-    end
   end
 
   defp metric_description("For Time"), do: "⏱️ Fastest time wins"
