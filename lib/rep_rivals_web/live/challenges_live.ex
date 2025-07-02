@@ -336,7 +336,7 @@ defmodule RepRivalsWeb.ChallengesLive do
       end)
 
     if all_completed and challenge.status == "active" do
-      case Library.update_challenge(challenge, %{status: "complete"}) do
+      case Library.update_challenge(challenge, %{status: "completed"}) do
         {:ok, _updated_challenge} ->
           Phoenix.PubSub.broadcast(
             RepRivals.PubSub,
