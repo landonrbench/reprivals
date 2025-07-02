@@ -326,10 +326,10 @@
                 </button>
                 <button
                   type="submit"
-                  disabled={!form_valid?(assigns)}
+                  disabled={!form_valid?(socket.assigns)}
                   class={[
                     "flex-1 px-4 py-2 rounded-lg font-medium",
-                    if(form_valid?(assigns),
+                    if(form_valid?(socket.assigns),
                       do: "bg-purple-500 text-white hover:bg-purple-600",
                       else: "bg-gray-300 text-gray-500 cursor-not-allowed"
                     )
