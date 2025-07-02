@@ -325,6 +325,28 @@ defmodule RepRivalsWeb.ChallengesLive do
 
   defp format_date(date) when is_nil(date), do: "Not set"
 
+  defp check_and_complete_challenge(socket, challenge_id) do\
+    challenge = Library.get_challenge!(challenge_id)\
+    participants = Library.list_challenge_participants(challenge_id)\
+    \
+    # Check if all participants have completed the challenge\
+    all_completed = Enum.all?(participants, fn participant ->\
+      participant.status == "completed"\
+    end)\
+    \
+    if all_completed and challenge.status == "active" do\
+      case Library.update_challenge(challenge, %{status: "complete"}) do\
+        {:ok, _updated_challenge} ->\
+          Phoenix.PubSub.broadcast(RepRivals.PubSub, "challenges", {:challenge_completed, challenge_id})\
+          socket\
+        {:error, _changeset} ->\
+          socket\
+      end\
+    else\
+      socket\
+    end\
+  end\
+
   defp format_date(date) do
     Calendar.strftime(date, "%B %d, %Y at %I:%M %p")
   end
