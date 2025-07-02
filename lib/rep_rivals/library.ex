@@ -682,7 +682,7 @@ defmodule RepRivals.Library do
             user_id: workout_result.user_id,
             status: "completed",
             result_value: workout_result.result_value,
-            result_unit: workout_result.result_unit,
+            result_unit: Map.get(workout_result, :result_unit, nil),
             result_notes: workout_result.notes,
             completed_at: workout_result.logged_at,
             inserted_at: DateTime.utc_now() |> DateTime.truncate(:second),
