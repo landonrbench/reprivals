@@ -354,33 +354,34 @@ defmodule RepRivalsWeb.ChallengesLive do
     end
   end
 
-  # Helper function to check and update all challenges that should be completed\
-  defp check_all_challenges_completion(socket) do\
-    challenges = socket.assigns.challenges\
-    \
-    Enum.each(challenges, fn challenge ->\
-      if challenge.status == "active" do\
-        participants = Library.list_challenge_participants(challenge.id)\
-        all_completed = Enum.all?(participants, fn p -> p.status == "completed" end)\
-        \
-        if all_completed do\
-          case Library.update_challenge(challenge, %{status: "completed"}) do\
-            {:ok, _updated_challenge} ->\
-              Phoenix.PubSub.broadcast(\
-                RepRivals.PubSub,\
-                "challenges",\
-                {:challenge_completed, challenge.id}\
-              )\
-            {:error, _changeset} ->\
-              :error\
-          end\
-        end\
-      end\
-    end)\
-    \
-    # Reload challenges to get updated statuses\
-    load_challenges(socket)\
-  end\
+  # Helper function to check and update all challenges that should be completed
+  defp check_all_challenges_completion(socket) do
+    challenges = socket.assigns.challenges
+
+    Enum.each(challenges, fn challenge ->
+      if challenge.status == "active" do
+        participants = Library.list_challenge_participants(challenge.id)
+        all_completed = Enum.all?(participants, fn p -> p.status == "completed" end)
+
+        if all_completed do
+          case Library.update_challenge(challenge, %{status: "completed"}) do
+            {:ok, _updated_challenge} ->
+              Phoenix.PubSub.broadcast(
+                RepRivals.PubSub,
+                "challenges",
+                {:challenge_completed, challenge.id}
+              )
+
+            {:error, _changeset} ->
+              :error
+          end
+        end
+      end
+    end)
+
+    # Reload challenges to get updated statuses
+    load_challenges(socket)
+  end
 
   defp format_date(date) do
     Calendar.strftime(date, "%B %d, %Y at %I:%M %p")
