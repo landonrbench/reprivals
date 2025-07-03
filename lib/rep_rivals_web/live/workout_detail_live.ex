@@ -97,6 +97,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
+  def handle_event("log_result_and_challenge", _params, socket) do
     workout = socket.assigns.workout
     user_id = socket.assigns.current_scope.user.id
     form = socket.assigns.form
@@ -363,105 +364,6 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
 
       {:error, _reason} ->
         {:noreply, put_flash(socket, :error, "Failed to create challenge")}
-    end
-  end
-
-  @impl true
-  def handle_event("show_edit_modal", _params, socket) do
-    {:noreply, assign(socket, :show_edit_modal, true)}
-  end
-
-  @impl true
-  def handle_event("hide_edit_modal", _params, socket) do
-    {:noreply, assign(socket, :show_edit_modal, false)}
-  end
-
-  @impl true
-  def handle_event("update_workout", %{"workout" => workout_params}, socket) do
-    case Library.update_workout(socket.assigns.workout, workout_params) do
-      {:ok, updated_workout} ->
-        {:noreply,
-         socket
-         |> assign(:workout, updated_workout)
-         |> assign(:show_edit_modal, false)
-         |> put_flash(:info, "Workout updated successfully!")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, edit_form: to_form(changeset))}
-    end
-  end
-
-  @impl true
-  def handle_event("show_delete_modal", _params, socket) do
-    {:noreply, assign(socket, :show_delete_modal, true)}
-  end
-
-  @impl true
-  def handle_event("hide_delete_modal", _params, socket) do
-    {:noreply, assign(socket, :show_delete_modal, false)}
-  end
-
-  @impl true
-  def handle_event("delete_workout", _params, socket) do
-    case Library.delete_workout(socket.assigns.workout) do
-      {:ok, _workout} ->
-        {:noreply,
-         socket
-         |> put_flash(:info, "Workout deleted successfully!")
-         |> push_navigate(to: ~p"/notebook")}
-
-      {:error, _changeset} ->
-        {:noreply,
-         socket
-         |> assign(:show_delete_modal, false)
-         |> put_flash(:error, "Failed to delete workout")}
-    end
-  end
-
-  @impl true
-  @impl true
-  def handle_event("validate", %{"workout_result" => result_params}, socket) do
-    # Create a more lenient validation for live typing
-    # Only validate dates that look reasonably complete (not partial dates like "0001-01-15")
-    filtered_params =
-      case Map.get(result_params, "logged_at") do
-        date_string when is_binary(date_string) ->
-          # Skip validation for clearly incomplete dates (year < 1900)
-          case String.slice(date_string, 0, 4) do
-            year_str when byte_size(year_str) == 4 ->
-              case Integer.parse(year_str) do
-                {year, _} when year >= 1900 -> result_params
-                _ -> Map.delete(result_params, "logged_at")
-              end
-
-            _ ->
-              Map.delete(result_params, "logged_at")
-          end
-
-        _ ->
-          result_params
-      end
-
-    changeset =
-      %WorkoutResult{}
-      |> Library.change_workout_result(filtered_params)
-      |> Map.put(:action, :validate)
-
-    %WorkoutResult{}
-    |> Library.change_workout_result(result_params)
-    |> Map.put(:action, :validate)
-
-    {:noreply, assign(socket, form: to_form(changeset))}
-  end
-
-  @impl true
-  def handle_info({:new_workout_result, workout_result}, socket) do
-    if workout_result.workout_id == socket.assigns.workout.id do
-      updated_results = [workout_result | socket.assigns.workout_results]
-
-      {:noreply, assign(socket, :workout_results, updated_results)}
-    else
-      {:noreply, socket}
     end
   end
 
