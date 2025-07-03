@@ -809,6 +809,42 @@ defmodule RepRivals.Library do
       %Ecto.Changeset{}
 
   """
+  @doc """\
+  Creates a challenge result for a participant.\
+\
+  ## Examples\
+\
+      iex> create_challenge_result(%{field: value})\
+      {:ok, %ChallengeResult{}}\
+\
+      iex> create_challenge_result(%{field: bad_value})\
+      {:error, %Ecto.Changeset{}}\
+\
+  """\
+  def create_challenge_result(attrs \\\\ %{}) do\
+    # For now, we'll update the challenge participant with the result\
+    # since we don't have a separate ChallengeResult schema\
+    participant = get_challenge_participant_by_challenge_and_user!(attrs.challenge_id, attrs.user_id)\
+    \
+    participant_attrs = %{\
+      status: "completed",\
+      result_value: attrs.result_value,\
+      result_notes: attrs.notes,\
+      completed_at: attrs.logged_at\
+    }\
+    \
+    update_challenge_participant(participant, participant_attrs)\
+  end\
+\
+  @doc """\
+  Gets a challenge participant by challenge and user ID.\
+  """\
+  def get_challenge_participant_by_challenge_and_user!(challenge_id, user_id) do\
+    ChallengeParticipant\
+    |> where([cp], cp.challenge_id == ^challenge_id and cp.user_id == ^user_id)\
+    |> Repo.one!()\
+  end\
+
   def change_challenge_participant(%ChallengeParticipant{} = participant, attrs \\ %{}) do
     ChallengeParticipant.changeset(participant, attrs)
   end
