@@ -630,6 +630,12 @@ defmodule RepRivals.Library do
 
   """
   def create_group_challenge(challenge_attrs, participant_user_ids) do
+    # Ensure required fields have defaults if empty
+    challenge_attrs = challenge_attrs
+      |> Map.put_new(:name, "Workout Challenge")
+      |> Map.put_new(:description, "Let's see who can get the best result!")
+      |> Map.put_new(:status, "active")
+
     Repo.transaction(fn ->
       # Create the challenge
       case create_challenge(challenge_attrs) do
@@ -642,6 +648,22 @@ defmodule RepRivals.Library do
             {:ok, _participants} -> challenge
             {:error, error} -> Repo.rollback(error)
           end
+
+        {:error, error} ->
+          Repo.rollback(error)
+      end
+    end)
+    Repo.transaction(fn ->
+      # Create the challenge
+      case create_challenge(challenge_attrs) do
+        {:ok, challenge} ->
+          # Add all participants including the creator
+          creator_id = challenge_attrs[:creator_id] || challenge_attrs["creator_id"]
+          all_participant_ids = [creator_id | participant_user_ids] |> Enum.uniq()
+
+          case create_challenge_participants(challenge.id, all_participant_ids) do
+            {:ok, _participants} -> challenge
+            {:error, error} -> Repo.rollback(error)
 
         {:error, error} ->
           Repo.rollback(error)
