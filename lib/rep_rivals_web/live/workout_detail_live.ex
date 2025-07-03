@@ -97,7 +97,6 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
   end
 
   @impl true
-  def handle_event("log_result_and_challenge", _params, socket) do
     workout = socket.assigns.workout
     user_id = socket.assigns.current_scope.user.id
     form = socket.assigns.form
