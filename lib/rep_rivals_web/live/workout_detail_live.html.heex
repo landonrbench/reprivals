@@ -61,13 +61,13 @@
       <%= if length(@workout_results) > 1 do %>
         <div class="bg-gray-800 rounded-xl p-6 mb-6 border border-gray-700">
           <h3 class="text-lg font-bold text-white mb-4">Progress Chart</h3>
-          <div
+          <canvas
             id="progress-chart"
             phx-hook="ProgressChart"
             data-chart-data={get_chart_data(@workout_results)}
             class="h-64"
           >
-          </div>
+          </canvas>
         </div>
       <% end %>
       

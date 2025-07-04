@@ -60,6 +60,19 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
     {:noreply, assign(socket, show_log_form: false)}
   end
 
+  def handle_event("validate", %{"workout_result" => result_params}, socket) do
+    changeset = Library.change_workout_result(%WorkoutResult{}, result_params)
+    changeset =
+      case Ecto.Changeset.apply_action(changeset, :validate) do
+        {:ok, changes} ->
+          Library.change_workout_result(changes)
+
+        {:error, changeset} ->
+          changeset
+      end
+    {:noreply, assign(socket, :form, to_form(changeset))}
+  end
+
   @impl true
   def handle_event("log_result", %{"workout_result" => result_params}, socket) do
     workout = socket.assigns.workout
@@ -89,6 +102,7 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
         {:noreply,
          socket
          |> assign(show_log_form: false)
+         |> assign(:workout_results, Library.list_workout_results(workout.id))
          |> put_flash(:info, "Result logged successfully!")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
@@ -395,42 +409,10 @@ defmodule RepRivalsWeb.WorkoutDetailLive do
     |> Enum.map(fn result ->
       %{
         date: format_result_date(result.logged_at),
-        value: parse_result_value(result.result_value)
+        value: result.result_value
       }
     end)
     |> Jason.encode!()
-  end
-
-  defp parse_result_value(value) do
-    cond do
-      # Time format (8:45 or 12:34:56) - convert to seconds
-      String.contains?(value, ":") ->
-        parts = String.split(value, ":")
-
-        case length(parts) do
-          # MM:SS
-          2 ->
-            [min, sec] = Enum.map(parts, &String.to_integer/1)
-            min * 60 + sec
-
-          # HH:MM:SS
-          3 ->
-            [hour, min, sec] = Enum.map(parts, &String.to_integer/1)
-            hour * 3600 + min * 60 + sec
-
-          _ ->
-            0
-        end
-
-      # Weight or reps - extract number
-      true ->
-        case Regex.run(~r/(\d+(?:\.\d+)?)/, value) do
-          [_, number] -> String.to_float(number)
-          _ -> 0
-        end
-    end
-  rescue
-    _ -> 0
   end
 
   defp user_is_selected?(user_id, selected_ids) do
