@@ -17,6 +17,7 @@ defmodule RepRivalsWeb.WorkoutNotebookLive do
     {:ok,
      socket
      |> assign(:workouts, workouts)
+     |> assign(:current_page, "workouts")
      |> assign(:sort_by, "date")
      |> assign(:workouts_empty?, workouts == [])
      |> stream(:workouts, workouts)}
