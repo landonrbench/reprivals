@@ -81,6 +81,7 @@ defmodule RepRivalsWeb do
       import Phoenix.HTML
       # Core UI components
       import RepRivalsWeb.CoreComponents
+      import RepRivalsWeb.Components.BottomNav
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
