@@ -31,7 +31,7 @@ defmodule RepRivalsWeb.Layouts do
 
   def app(assigns) do
     ~H"""
-    <main class="min-h-screen">
+    <main class="min-h-screen pb-20">
       {render_slot(@inner_block)}
       
     <!-- Bottom Navigation -->
