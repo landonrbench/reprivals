@@ -33,6 +33,9 @@ defmodule RepRivalsWeb.Layouts do
     ~H"""
     <main class="min-h-screen">
       {render_slot(@inner_block)}
+      
+    <!-- Bottom Navigation -->
+      <.bottom_nav current_page={assigns[:current_page] || ""} />
     </main>
 
     <.flash_group flash={@flash} />
