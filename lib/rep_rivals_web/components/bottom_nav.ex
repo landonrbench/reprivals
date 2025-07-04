@@ -18,7 +18,7 @@ defmodule RepRivalsWeb.Components.BottomNav do
         
     <!-- Workouts -->
         <.nav_item
-          href="/workouts"
+          href="/notebook"
           icon="hero-clipboard-document-list"
           label="Workouts"
           active={@current_page == "workouts"}
@@ -30,6 +30,14 @@ defmodule RepRivalsWeb.Components.BottomNav do
           icon="hero-trophy"
           label="Leaderboard"
           active={@current_page == "leaderboard"}
+        />
+        
+    <!-- Challenges -->
+        <.nav_item
+          href="/challenges"
+          icon="hero-trophy"
+          label="Challenges"
+          active={@current_page == "challenges"}
         />
         
     <!-- Friends -->
