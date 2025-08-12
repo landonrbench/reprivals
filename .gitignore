@@ -35,3 +35,6 @@ phx_new_cache-*.tar
 npm-debug.log
 /assets/node_modules/
 
+*.db
+*.db-shm
+*.db-wal
