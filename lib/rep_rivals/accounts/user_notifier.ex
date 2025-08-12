@@ -41,18 +41,14 @@ defmodule RepRivals.Accounts.UserNotifier do
   @doc """
   Deliver instructions to log in with a magic link.
   """
-  def deliver_login_instructions(user, url_or_fun) do
-    url = if is_function(url_or_fun), do: url_or_fun.("TOKEN_PLACEHOLDER"), else: url_or_fun
-
+  def deliver_login_instructions(user, url) do
     case user do
       %User{confirmed_at: nil} -> deliver_confirmation_instructions(user, url)
       _ -> deliver_magic_link_instructions(user, url)
     end
   end
 
-  defp deliver_magic_link_instructions(user, url_or_fun) do
-    url = if is_function(url_or_fun), do: url_or_fun.("TOKEN_PLACEHOLDER"), else: url_or_fun
-
+  defp deliver_magic_link_instructions(user, url) do
     deliver(user.email, "Log in instructions", """
 
     ==============================
@@ -69,9 +65,7 @@ defmodule RepRivals.Accounts.UserNotifier do
     """)
   end
 
-  defp deliver_confirmation_instructions(user, url_or_fun) do
-    url = if is_function(url_or_fun), do: url_or_fun.("TOKEN_PLACEHOLDER"), else: url_or_fun
-
+  defp deliver_confirmation_instructions(user, url) do
     deliver(user.email, "Confirmation instructions", """
 
     ==============================

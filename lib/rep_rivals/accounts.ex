@@ -402,9 +402,9 @@ defmodule RepRivals.Accounts do
     if user.confirmed_at do
       {:error, :already_confirmed}
     else
-      {_encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
+      {encoded_token, user_token} = UserToken.build_email_token(user, "confirm")
       Repo.insert!(user_token)
-      UserNotifier.deliver_login_instructions(user, confirmation_url_fun)
+      UserNotifier.deliver_login_instructions(user, confirmation_url_fun.(encoded_token))
     end
   end
 
