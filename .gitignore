@@ -38,3 +38,8 @@ npm-debug.log
 *.db
 *.db-shm
 *.db-wal
+
+# SQLite database files
+*.db
+*.db-shm
+*.db-wal
