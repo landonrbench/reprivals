@@ -69,9 +69,10 @@ defmodule RepRivalsWeb.UserLive.Registration do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         {:ok, _} =
+          {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
             user,
-            url(~p"/users/confirm/#{encoded_token}")
+            fn token -> url(~p"/users/confirm/#{token}") end
           )
 
         changeset = Accounts.change_user_registration(user)
