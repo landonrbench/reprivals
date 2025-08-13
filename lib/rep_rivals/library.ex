@@ -327,3 +327,7 @@ defmodule RepRivals.Library do
 
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking workout_result changes.
+
+  ## Examples
+
+      iex> change
