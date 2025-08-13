@@ -222,6 +222,7 @@ defmodule RepRivalsWeb.ChallengesLive do
          |> assign(show_complete_modal: false, selected_participant: nil)
          |> put_flash(:info, "Challenge completed!")
          |> check_and_complete_challenge(participant.challenge_id)
+         |> load_challenges()
          |> load_challenge_invites()}
 
       {:error, _changeset} ->
@@ -243,7 +244,8 @@ defmodule RepRivalsWeb.ChallengesLive do
     socket =
       socket
       |> load_challenges()
-      |> load_challenge_invites()
+         |> load_challenges()
+         |> load_challenge_invites()}
 
     {:noreply, socket}
   end
