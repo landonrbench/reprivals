@@ -91,13 +91,43 @@
                   <h4 class="text-white font-medium text-sm">Participants:</h4>
                   <%= for participant <- challenge.participants do %>
                     <div class="flex justify-between items-center bg-gray-700 rounded-lg px-3 py-2 border border-gray-600">
-                      <span class="text-white text-sm">{participant.user.email}</span>
-                      <span class={[
-                        "px-2 py-1 rounded-full text-xs font-medium",
-                        challenge_status_class(participant.status)
-                      ]}>
-                        {challenge_status_text(participant.status)}
-                      </span>
+                      <div class="flex-1">
+                        <span class="text-white text-sm">{participant.user.email}</span>
+                        <span class={[
+                          "ml-2 px-2 py-1 rounded-full text-xs font-medium",
+                          challenge_status_class(participant.status)
+                        ]}>
+                          {challenge_status_text(participant.status)}
+                        </span>
+                      </div>
+                      
+<!-- Add Log Result button for accepted participants -->
+                      <%= if participant.status == "accepted" and participant.user_id == @current_scope.user.id do %>
+                        <button
+                          phx-click="show_complete_modal"
+                          phx-value-id={participant.id}
+                          class="ml-2 bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-xs font-medium transition-colors"
+                        >
+                          Log Result
+                        </button>
+                      <% end %>
+                      
+<!-- Show completed result if participant is done -->
+                      <%= if participant.status == "completed" do %>
+                        <div class="ml-2 text-right">
+                          <div class="text-green-400 text-xs font-medium">
+                            🏆 {format_result_with_unit(
+                              participant.result_value,
+                              participant.result_unit
+                            )}
+                          </div>
+                          <%= if participant.result_notes do %>
+                            <div class="text-gray-300 text-xs mt-1">
+                              {participant.result_notes}
+                            </div>
+                          <% end %>
+                        </div>
+                      <% end %>
                     </div>
                   <% end %>
                 </div>
