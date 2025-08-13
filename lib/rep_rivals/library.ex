@@ -694,7 +694,23 @@ defmodule RepRivals.Library do
       # Create the challenge
       case create_challenge(challenge_attrs) do
         {:ok, challenge} ->
-          # Create the creator as a completed participant
+          # Create the creator as an accepted participant
+          case create_challenge_participants_with_status(
+                 challenge.id,
+                 [workout_result.user_id],
+                 "accepted"
+               ) do
+            {:ok, _creator_participant} ->
+              # Create invited participants
+              case create_challenge_participants(challenge.id, participant_user_ids) do
+                {:ok, _participants} -> challenge
+                {:error, error} -> Repo.rollback(error)
+              end
+
+            {:error, error} ->
+              Repo.rollback(error)
+          end
+
           creator_participant_attrs = %{
             challenge_id: challenge.id,
             user_id: workout_result.user_id,
