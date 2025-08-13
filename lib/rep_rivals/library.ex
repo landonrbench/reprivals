@@ -645,7 +645,17 @@ defmodule RepRivals.Library do
           creator_id = challenge_attrs[:creator_id] || challenge_attrs["creator_id"]
           all_participant_ids = [creator_id | participant_user_ids] |> Enum.uniq()
 
-          case create_challenge_participants(challenge.id, all_participant_ids) do
+          # Add creator as accepted participant
+          case create_challenge_participants_with_status(challenge.id, [creator_id], "accepted") do
+            {:ok, _creator_participant} ->
+              # Add other participants as invited
+              case create_challenge_participants_with_status(challenge.id, participant_user_ids, "invited") do
+                {:ok, _participants} -> challenge
+                {:error, error} -> Repo.rollback(error)
+              end
+
+            {:error, error} -> Repo.rollback(error)
+          end
             {:ok, _participants} -> challenge
             {:error, error} -> Repo.rollback(error)
           end
@@ -725,6 +735,19 @@ defmodule RepRivals.Library do
 
   """
   def create_challenge_participants(challenge_id, user_ids) do
+    create_challenge_participants_with_status(challenge_id, user_ids, "invited")
+  end
+
+  @doc """
+  Creates challenge participants for a list of user IDs with a specific status.
+
+  ## Examples
+
+      iex> create_challenge_participants_with_status(challenge_id, [1, 2, 3], "invited")
+      {:ok, [%ChallengeParticipant{}, ...]}
+
+  """
+  def create_challenge_participants_with_status(challenge_id, user_ids, status) do
     participants =
       Enum.map(user_ids, fn user_id ->
         %{
