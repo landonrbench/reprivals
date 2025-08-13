@@ -330,4 +330,11 @@ defmodule RepRivals.Library do
 
   ## Examples
 
-      iex> change
+      iex> change_workout_result(workout_result)
+      %Ecto.Changeset{}
+
+  """
+  def change_workout_result(%WorkoutResult{} = workout_result, attrs \\ %{}) do
+    WorkoutResult.changeset(workout_result, attrs)
+  end
+end
