@@ -244,8 +244,7 @@ defmodule RepRivalsWeb.ChallengesLive do
     socket =
       socket
       |> load_challenges()
-         |> load_challenges()
-         |> load_challenge_invites()}
+      |> load_challenge_invites()
 
     {:noreply, socket}
   end
