@@ -146,7 +146,7 @@ defmodule RepRivals.AccountsTest do
     end
 
     test "updates the email with a valid token", %{user: user, token: token, email: email} do
-      assert Accounts.update_user_email(user, token) == :ok
+      assert {:ok, %{email: ^email}} = Accounts.update_user_email(user, token)
       changed_user = Repo.get!(User, user.id)
       assert changed_user.email != user.email
       assert changed_user.email == email
@@ -154,20 +154,27 @@ defmodule RepRivals.AccountsTest do
     end
 
     test "does not update email with invalid token", %{user: user} do
-      assert Accounts.update_user_email(user, "oops") == :error
+      assert Accounts.update_user_email(user, "oops") ==
+               {:error, :transaction_aborted}
+
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not update email if user email changed", %{user: user, token: token} do
-      assert Accounts.update_user_email(%{user | email: "current@example.com"}, token) == :error
+      assert Accounts.update_user_email(%{user | email: "current@example.com"}, token) ==
+               {:error, :transaction_aborted}
+
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
 
     test "does not update email if token expired", %{user: user, token: token} do
       {1, nil} = Repo.update_all(UserToken, set: [inserted_at: ~N[2020-01-01 00:00:00]])
-      assert Accounts.update_user_email(user, token) == :error
+
+      assert Accounts.update_user_email(user, token) ==
+               {:error, :transaction_aborted}
+
       assert Repo.get!(User, user.id).email == user.email
       assert Repo.get_by(UserToken, user_id: user.id)
     end
@@ -223,7 +230,7 @@ defmodule RepRivals.AccountsTest do
     end
 
     test "updates the password", %{user: user} do
-      {:ok, user, expired_tokens} =
+      {:ok, {user, expired_tokens}} =
         Accounts.update_user_password(user, %{
           password: "new valid password"
         })
@@ -236,7 +243,7 @@ defmodule RepRivals.AccountsTest do
     test "deletes all tokens for the given user", %{user: user} do
       _ = Accounts.generate_user_session_token(user)
 
-      {:ok, _, _} =
+      {:ok, {_, _}} =
         Accounts.update_user_password(user, %{
           password: "new valid password"
         })
@@ -328,7 +335,7 @@ defmodule RepRivals.AccountsTest do
       refute user.confirmed_at
       {encoded_token, hashed_token} = generate_user_magic_link_token(user)
 
-      assert {:ok, user, [%{token: ^hashed_token}]} =
+      assert {:ok, {user, [%{token: ^hashed_token}]}} =
                Accounts.login_user_by_magic_link(encoded_token)
 
       assert user.confirmed_at
@@ -338,7 +345,7 @@ defmodule RepRivals.AccountsTest do
       user = user_fixture()
       assert user.confirmed_at
       {encoded_token, _hashed_token} = generate_user_magic_link_token(user)
-      assert {:ok, ^user, []} = Accounts.login_user_by_magic_link(encoded_token)
+      assert {:ok, {^user, []}} = Accounts.login_user_by_magic_link(encoded_token)
       # one time use only
       assert {:error, :not_found} = Accounts.login_user_by_magic_link(encoded_token)
     end

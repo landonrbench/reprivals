@@ -48,7 +48,7 @@ defmodule RepRivalsWeb.ChallengesLive do
     IO.puts("DEBUG: show_create_modal event triggered")
     workouts = Library.list_workouts_for_user(socket.assigns.current_scope.user.id)
     IO.puts("DEBUG: Found #{length(workouts)} workouts")
-    friends = Accounts.list_users()
+    friends = Accounts.list_friends(socket.assigns.current_scope)
     IO.puts("DEBUG: Found #{length(friends)} total users")
     filtered_friends = Enum.reject(friends, &(&1.id == socket.assigns.current_scope.user.id))
     IO.puts("DEBUG: Filtered to #{length(filtered_friends)} friends")

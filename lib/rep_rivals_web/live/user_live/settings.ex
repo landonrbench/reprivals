@@ -5,13 +5,16 @@ defmodule RepRivalsWeb.UserLive.Settings do
 
   alias RepRivals.Accounts
 
+  @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
-      <.header class="text-center">
-        Account Settings
-        <:subtitle>Manage your account email address and password settings</:subtitle>
-      </.header>
+      <div class="text-center">
+        <.header>
+          Account Settings
+          <:subtitle>Manage your account email address and password settings</:subtitle>
+        </.header>
+      </div>
 
       <.form for={@email_form} id="email_form" phx-submit="update_email" phx-change="validate_email">
         <.input
@@ -63,13 +66,14 @@ defmodule RepRivalsWeb.UserLive.Settings do
     """
   end
 
+  @impl true
   def mount(%{"token" => token}, _session, socket) do
     socket =
       case Accounts.update_user_email(socket.assigns.current_scope.user, token) do
-        :ok ->
+        {:ok, _user} ->
           put_flash(socket, :info, "Email changed successfully.")
 
-        :error ->
+        {:error, _} ->
           put_flash(socket, :error, "Email change link is invalid or it has expired.")
       end
 
@@ -78,7 +82,7 @@ defmodule RepRivalsWeb.UserLive.Settings do
 
   def mount(_params, _session, socket) do
     user = socket.assigns.current_scope.user
-    email_changeset = Accounts.change_user_email(user, %{}, validate_email: false)
+    email_changeset = Accounts.change_user_email(user, %{}, validate_unique: false)
     password_changeset = Accounts.change_user_password(user, %{}, hash_password: false)
 
     socket =
@@ -91,12 +95,13 @@ defmodule RepRivalsWeb.UserLive.Settings do
     {:ok, socket}
   end
 
+  @impl true
   def handle_event("validate_email", params, socket) do
     %{"user" => user_params} = params
 
     email_form =
       socket.assigns.current_scope.user
-      |> Accounts.change_user_email(user_params, validate_email: false)
+      |> Accounts.change_user_email(user_params, validate_unique: false)
       |> Map.put(:action, :validate)
       |> to_form()
 
