@@ -14,11 +14,10 @@ defmodule RepRivalsWeb.UserLive.Confirmation do
 
         <.form for={@form} id="confirmation_form" phx-submit="send_instructions">
           <.input field={@form[:email]} type="email" placeholder="Email" required />
-          <:actions>
-            <.button phx-disable-with="Sending..." class="w-full">
-              Send confirmation instructions
-            </.button>
-          </:actions>
+
+          <.button phx-disable-with="Sending..." class="w-full">
+            Send confirmation instructions
+          </.button>
         </.form>
 
         <p class="text-center">
@@ -38,11 +37,10 @@ defmodule RepRivalsWeb.UserLive.Confirmation do
 
         <.form for={@form} id="confirmation_form" phx-submit="confirm_account">
           <input type="hidden" name="token" value={@token} />
-          <:actions>
-            <.button phx-disable-with="Confirming..." class="w-full">
-              Confirm my account
-            </.button>
-          </:actions>
+
+          <.button phx-disable-with="Confirming..." class="w-full">
+            Confirm my account
+          </.button>
         </.form>
 
         <p class="text-center">
