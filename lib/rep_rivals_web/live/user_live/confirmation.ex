@@ -12,14 +12,14 @@ defmodule RepRivalsWeb.UserLive.Confirmation do
           <:subtitle>We'll send a confirmation link to your inbox</:subtitle>
         </.header>
 
-        <.simple_form for={@form} id="confirmation_form" phx-submit="send_instructions">
+        <.form for={@form} id="confirmation_form" phx-submit="send_instructions">
           <.input field={@form[:email]} type="email" placeholder="Email" required />
           <:actions>
             <.button phx-disable-with="Sending..." class="w-full">
               Send confirmation instructions
             </.button>
           </:actions>
-        </.simple_form>
+        </.form>
 
         <p class="text-center">
           <.link navigate={~p"/users/register"}>Register</.link>
@@ -36,14 +36,14 @@ defmodule RepRivalsWeb.UserLive.Confirmation do
       <div class="mx-auto max-w-sm space-y-4">
         <.header class="text-center">Confirm account</.header>
 
-        <.simple_form for={@form} id="confirmation_form" phx-submit="confirm_account">
+        <.form for={@form} id="confirmation_form" phx-submit="confirm_account">
           <input type="hidden" name="token" value={@token} />
           <:actions>
             <.button phx-disable-with="Confirming..." class="w-full">
               Confirm my account
             </.button>
           </:actions>
-        </.simple_form>
+        </.form>
 
         <p class="text-center">
           <.link navigate={~p"/users/register"}>Register</.link>
