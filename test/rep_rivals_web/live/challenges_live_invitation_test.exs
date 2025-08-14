@@ -22,29 +22,29 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         })
 
       # Create a challenge
-      {:ok, challenge} =
-        Library.create_challenge(%{
+      {:ok, {challenge, [invitee_participant]}} =
+        Library.create_group_challenge(%{
           name: "Test Challenge",
           description: "A test challenge",
           status: "active",
           creator_id: creator.id,
           workout_id: workout.id,
           expires_at: DateTime.add(DateTime.utc_now(), 7, :day)
-        })
+        }, [invitee.id])
 
       # Create challenge participants (creator and invitee)
-      {:ok, _creator_participant} =
-        Library.create_challenge_participants(challenge.id, [creator.id])
+      # {:ok, _creator_participant} =
+      #   Library.create_challenge_participants(challenge.id, [creator.id])
 
-      {:ok, invitee_participant} =
-        Library.create_challenge_participants(challenge.id, [invitee.id])
+      # {:ok, invitee_participant} =
+      #   Library.create_challenge_participants(challenge.id, [invitee.id])
 
       %{
         creator: creator,
         invitee: invitee,
         challenge: challenge,
         workout: workout,
-        invitee_participant: List.first(invitee_participant)
+        invitee_participant: invitee_participant
       }
     end
 

@@ -3,24 +3,27 @@ defmodule RepRivalsWeb.UserLive.Login do
 
   alias RepRivals.Accounts
 
+  @impl true
   def render(assigns) do
     ~H"""
     <Layouts.app flash={@flash} current_scope={@current_scope}>
       <div class="mx-auto max-w-sm space-y-4">
-        <.header class="text-center">
-          <p>Log in</p>
-          <:subtitle>
-            <%= if @current_scope do %>
-              You need to reauthenticate to perform sensitive actions on your account.
-            <% else %>
-              Don't have an account? <.link
-                navigate={~p"/users/register"}
-                class="font-semibold text-brand hover:underline"
-                phx-no-format
-              >Sign up</.link> for an account now.
-            <% end %>
-          </:subtitle>
-        </.header>
+        <div class="text-center">
+          <.header>
+            <p>Log in</p>
+            <:subtitle>
+              <%= if @current_scope do %>
+                You need to reauthenticate to perform sensitive actions on your account.
+              <% else %>
+                Don't have an account? <.link
+                  navigate={~p"/users/register"}
+                  class="font-semibold text-brand hover:underline"
+                  phx-no-format
+                >Sign up</.link> for an account now.
+              <% end %>
+            </:subtitle>
+          </.header>
+        </div>
 
         <div :if={local_mail_adapter?()} class="alert alert-info">
           <.icon name="hero-information-circle" class="size-6 shrink-0" />
@@ -48,7 +51,7 @@ defmodule RepRivalsWeb.UserLive.Login do
             required
             phx-mounted={JS.focus()}
           />
-          <.button class="w-full" variant="primary">
+          <.button class="btn btn-primary w-full">
             Log in with email <span aria-hidden="true">→</span>
           </.button>
         </.form>
@@ -77,14 +80,11 @@ defmodule RepRivalsWeb.UserLive.Login do
             label="Password"
             autocomplete="current-password"
           />
-          <.input
-            :if={!@current_scope}
-            field={f[:remember_me]}
-            type="checkbox"
-            label="Keep me logged in"
-          />
-          <.button class="w-full" variant="primary">
-            Log in <span aria-hidden="true">→</span>
+          <.button class="btn btn-primary w-full" name={@form[:remember_me].name} value="true">
+            Log in and stay logged in <span aria-hidden="true">→</span>
+          </.button>
+          <.button class="btn btn-primary btn-soft w-full mt-2">
+            Log in only this time
           </.button>
         </.form>
       </div>
@@ -92,6 +92,7 @@ defmodule RepRivalsWeb.UserLive.Login do
     """
   end
 
+  @impl true
   def mount(_params, _session, socket) do
     email =
       Phoenix.Flash.get(socket.assigns.flash, :email) ||
@@ -102,6 +103,7 @@ defmodule RepRivalsWeb.UserLive.Login do
     {:ok, assign(socket, form: form, trigger_submit: false)}
   end
 
+  @impl true
   def handle_event("submit_password", _params, socket) do
     {:noreply, assign(socket, :trigger_submit, true)}
   end

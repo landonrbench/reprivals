@@ -13,43 +13,13 @@ defmodule RepRivals.Accounts.User do
   end
 
   @doc """
-  A user changeset for registration.
-
-  It is important to validate the length of both the email and password.
-  Otherwise databases may truncate the email without warnings, which
-  could lead to unpredictable or insecure behaviour. Long passwords may
-  also be very expensive to hash for certain algorithms.
-
-  ## Options
-
-    * `:hash_password` - Hashes the password so it can be stored securely
-      in the database and ensures the password field is cleared to prevent
-      leaks in the logs. If password hashing is not needed and clearing the
-      password field is not desired (like when using this changeset for
-      validations on a LiveView form), this option can be set to `false`.
-      Defaults to `true`.
-
-    * `:validate_email` - Validates the uniqueness of the email, in case
-      you don't want to validate the uniqueness of the email (like when
-      using this changeset for validations on a LiveView form before
-      submitting the form), this option can be set to `false`.
-      Defaults to `true`.
-  """
-  def registration_changeset(user, attrs, opts \\ []) do
-    user
-    |> cast(attrs, [:email, :password])
-    |> validate_email(opts)
-    |> validate_password(opts)
-  end
-
-  @doc """
   A user changeset for registering or changing the email.
 
   It requires the email to change otherwise an error is added.
 
   ## Options
 
-    * `:validate_email` - Set to false if you don't want to validate the
+    * `:validate_unique` - Set to false if you don't want to validate the
       uniqueness of the email, useful when displaying live validations.
       Defaults to `true`.
   """
@@ -68,7 +38,7 @@ defmodule RepRivals.Accounts.User do
       )
       |> validate_length(:email, max: 160)
 
-    if Keyword.get(opts, :validate_email, true) do
+    if Keyword.get(opts, :validate_unique, true) do
       changeset
       |> unsafe_validate_unique(:email, RepRivals.Repo)
       |> unique_constraint(:email)
@@ -133,19 +103,6 @@ defmodule RepRivals.Accounts.User do
       |> delete_change(:password)
     else
       changeset
-    end
-  end
-
-  @doc """
-  Validates the current password otherwise adds an error to the changeset.
-  """
-  def validate_current_password(changeset, password) do
-    changeset = cast(changeset, %{}, [])
-
-    if valid_password?(changeset.data, password) do
-      changeset
-    else
-      add_error(changeset, :current_password, "is not valid")
     end
   end
 
