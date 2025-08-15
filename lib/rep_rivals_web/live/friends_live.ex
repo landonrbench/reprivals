@@ -94,7 +94,7 @@ defmodule RepRivalsWeb.FriendsLive do
         user_id = socket.assigns.current_scope.user.id
 
         # Refresh all friend data
-        friends = Accounts.list_friends(user_id)
+        friends = Accounts.list_friends(socket.assigns.current_scope)
         pending_requests = Accounts.list_pending_friend_requests(user_id)
 
         {:noreply,
