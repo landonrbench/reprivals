@@ -7,7 +7,7 @@ defmodule RepRivalsWeb.FriendsLive do
   def mount(_params, _session, socket) do
     user_id = socket.assigns.current_scope.user.id
 
-    friends = Accounts.list_friends(user_id)
+    friends = Accounts.list_friends(socket.assigns.current_scope)
     pending_requests = Accounts.list_pending_friend_requests(user_id)
     sent_requests = Accounts.list_sent_friend_requests(user_id)
 
@@ -52,7 +52,7 @@ defmodule RepRivalsWeb.FriendsLive do
         {:noreply, put_flash(socket, :error, "You can't add yourself as a friend!")}
 
       email ->
-        case Accounts.find_user_by_email(email) do
+        case Accounts.get_user_by_email(email) do
           nil ->
             {:noreply, put_flash(socket, :error, "User not found with email: #{email}")}
 
