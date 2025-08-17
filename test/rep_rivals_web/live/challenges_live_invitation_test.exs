@@ -179,8 +179,8 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html =
         view
         |> form("#complete-challenge-form", %{
-          "result_value" => "12.50",
-          "result_unit" => "minutes",
+          "time_minutes" => "12",
+          "time_seconds" => "30",
           "result_notes" => "Great workout!"
         })
         |> render_submit()
