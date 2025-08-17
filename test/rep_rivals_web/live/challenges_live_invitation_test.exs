@@ -1,5 +1,5 @@
 defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
-  use RepRivalsWeb.ConnCase, async: true
+  use RepRivalsWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
   import RepRivals.AccountsFixtures
   import RepRivals.LibraryFixtures
