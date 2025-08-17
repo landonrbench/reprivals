@@ -178,7 +178,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Submit completion form
       html =
         view
-        |> form("#complete-form-#{accepted_participant.id}", %{
+        |> form("#complete-challenge-form", %{
           "result_value" => "12.50",
           "result_unit" => "minutes",
           "result_notes" => "Great workout!"
