@@ -187,7 +187,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
 
       # Verify completion success message and UI update
       assert html =~ "🏆 Completed"
-      assert html =~ "12.50 minutes"
+      assert html =~ "12:30"
 
       # Verify database was updated with completion
       completed_participant = Repo.get(Library.ChallengeParticipant, accepted_participant.id)
