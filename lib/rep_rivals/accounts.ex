@@ -309,7 +309,7 @@ defmodule RepRivals.Accounts do
       {:error, %Ecto.Changeset{}}
 
   """
-  def send_friend_request(user_id, friend_id) do
+  def send_friend_request(%Scope{user: %User{id: user_id}}, friend_id) do
     %Friendship{}
     |> Friendship.changeset(%{user_id: user_id, friend_id: friend_id, status: "pending"})
     |> Repo.insert()
@@ -320,14 +320,14 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> accept_friend_request(friendship)
+      iex> accept_friend_request(scope, friendship)
       {:ok, %Friendship{}}
 
-      iex> accept_friend_request(invalid_friendship)
+      iex> accept_friend_request(scope, invalid_friendship)
       {:error, %Ecto.Changeset{}}
 
   """
-  def accept_friend_request(%Friendship{} = friendship) do
+  def accept_friend_request(%Scope{user: %User{id: user_id}}, %Friendship{friend_id: user_id} = friendship) do
     friendship
     |> Friendship.changeset(%{status: "accepted"})
     |> Repo.update()
@@ -338,11 +338,15 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> decline_friend_request(friendship)
+      iex> decline_friend_request(scope, friendship)
       {:ok, %Friendship{}}
 
   """
-  def decline_friend_request(%Friendship{} = friendship) do
+  def decline_friend_request(%Scope{user: %User{id: user_id}}, %Friendship{user_id: user_id} = friendship) do
+    Repo.delete(friendship)
+  end
+
+  def decline_friend_request(%Scope{user: %User{id: user_id}}, %Friendship{friend_id: user_id} = friendship) do
     Repo.delete(friendship)
   end
 
@@ -351,7 +355,7 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> list_friends(user_id)
+      iex> list_friends(scope)
       [%User{}, ...]
 
   """
@@ -372,11 +376,11 @@ defmodule RepRivals.Accounts do
 
   ## Examples
 
-      iex> list_pending_friend_requests(user_id)
+      iex> list_pending_friend_requests(scope)
       [%Friendship{}, ...]
 
   """
-  def list_pending_friend_requests(user_id) do
+  def list_pending_friend_requests(%Scope{user: %User{id: user_id}}) do
     from(f in Friendship,
       where: f.friend_id == ^user_id and f.status == "pending",
       preload: [:user]
@@ -393,7 +397,7 @@ defmodule RepRivals.Accounts do
       [%Friendship{}, ...]
 
   """
-  def list_sent_friend_requests(user_id) do
+  def list_sent_friend_requests(%Scope{user: %User{id: user_id}}) do
     from(f in Friendship,
       where: f.user_id == ^user_id and f.status == "pending",
       preload: [:friend]

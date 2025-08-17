@@ -2,7 +2,6 @@ defmodule RepRivalsWeb.HomeLive do
   use RepRivalsWeb, :live_view
 
   alias RepRivals.Library
-  alias RepRivals.Accounts
 
   @impl true
   def mount(_params, _session, socket) do
@@ -54,7 +53,7 @@ defmodule RepRivalsWeb.HomeLive do
             </div>
           </div>
         </div>
-        
+
     <!-- Stats Cards -->
         <div class="px-4 pb-6">
           <div class="grid grid-cols-2 gap-4">
@@ -68,7 +67,7 @@ defmodule RepRivalsWeb.HomeLive do
             </div>
           </div>
         </div>
-        
+
     <!-- Recent Workouts -->
         <div class="px-4 pb-20">
           <h2 class="text-lg font-semibold text-white mb-4">Recent Workouts</h2>
@@ -121,7 +120,7 @@ defmodule RepRivalsWeb.HomeLive do
             <% end %>
           </div>
         </div>
-        
+
     <!-- Bottom Navigation -->
         <div class="fixed bottom-0 left-0 right-0 bg-gray-800 border-t border-gray-700">
           <div class="flex items-center justify-around py-2">
