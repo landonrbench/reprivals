@@ -100,9 +100,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Accept the challenge
       html =
         view
-        |> element(
-          "button[phx-click='accept_challenge'][phx-value-id='#{participant.id}']"
-        )
+        |> element("button[phx-click='accept_challenge'][phx-value-id='#{participant.id}']")
         |> render_click()
 
       # Verify the UI shows accepted status
@@ -249,4 +247,5 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       assert html =~ creator.email
       assert html =~ invitee.email
     end
+  end
 end
