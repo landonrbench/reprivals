@@ -23,14 +23,17 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
 
       # Create a challenge
       {:ok, {challenge, [invitee_participant]}} =
-        Library.create_group_challenge(%{
-          name: "Test Challenge",
-          description: "A test challenge",
-          status: "active",
-          creator_id: creator.id,
-          workout_id: workout.id,
-          expires_at: DateTime.add(DateTime.utc_now(), 7, :day)
-        }, [invitee.id])
+        Library.create_group_challenge(
+          %{
+            name: "Test Challenge",
+            description: "A test challenge",
+            status: "active",
+            creator_id: creator.id,
+            workout_id: workout.id,
+            expires_at: DateTime.add(DateTime.utc_now(), 7, :day)
+          },
+          [invitee.id]
+        )
 
       # Create challenge participants (creator and invitee)
       # {:ok, _creator_participant} =
@@ -103,7 +106,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         |> render_click()
 
       # Verify the UI shows accepted status
-      assert html =~ "🟡 Accepted"
+      assert html =~ "✅ Accepted"
       refute html =~ "Accept Challenge"
 
       # Verify the database was updated
@@ -130,7 +133,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html = view |> element("button[phx-value-tab='invites']") |> render_click()
 
       # Verify accepted status and completion interface
-      assert html =~ "🟡 Accepted"
+      assert html =~ "✅ Accepted"
       assert html =~ "Complete Challenge"
 
       # Click complete challenge button to show completion form
