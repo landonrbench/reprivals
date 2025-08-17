@@ -158,26 +158,26 @@
                 </div>
 
                 <p class="text-gray-300 text-sm mb-3">{invite.challenge.description}</p>
+
+                <div class="bg-gray-700 rounded-lg p-3 mb-4 border border-gray-600">
+                  <div class="flex items-center text-orange-400 text-sm">
+                    <span class="mr-2">🏋️</span>
+                    <strong>{invite.challenge.workout.name}</strong>
+                  </div>
+                  <div class="text-gray-300 text-xs mt-1">
+                    Type: {workout_metric_description(invite.challenge.workout.metric)}
+                  </div>
+                </div>
+
                 <p class="text-gray-400 text-xs mb-4">
                   From: {invite.challenge.creator.email}
                 </p>
 
                 <%= if invite.status == "accepted" do %>
                   <!-- Show workout description when accepted -->
-                  <div class="bg-gray-700 rounded-lg p-4 mb-4 border border-gray-600">
-                    <div class="flex items-center text-orange-400 mb-2">
-                      <span class="mr-2">🏋️</span>
-                      <strong>{invite.challenge.workout.name}</strong>
-                    </div>
-                    <div class="text-gray-300 text-sm mb-2">
-                      <strong>Type:</strong> {workout_metric_description(
-                        invite.challenge.workout.metric
-                      )}
-                    </div>
-                    <div class="text-gray-300 text-sm bg-gray-600 rounded p-3 border border-gray-500">
-                      <strong>Workout Description:</strong> <br />
-                      {invite.challenge.workout.description}
-                    </div>
+                  <div class="text-gray-300 text-sm bg-gray-600 rounded p-3 border border-gray-500 mb-4">
+                    <strong>Workout Description:</strong> <br />
+                    {invite.challenge.workout.description}
                   </div>
                 <% end %>
 
