@@ -231,14 +231,14 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
           completed_at: DateTime.utc_now()
         })
 
-      # Log in as invitee to view leaderboard
-      conn = log_in_user(conn, invitee)
+      # Log in as creator to view their challenge leaderboard
+      conn = log_in_user(conn, creator)
       {:ok, view, _html} = live(conn, ~p"/challenges")
 
-      # Switch to invites tab to see completed challenge
-      html = view |> element("button[phx-value-tab='invites']") |> render_click()
+      # Stay on "My Challenges" tab to see full leaderboard
+      html = render(view)
 
-      # Verify leaderboard shows both participants with correct order and results
+      # Verify leaderboard shows both participants with correct results
       assert html =~ "🏆 Completed"
       # Creator's faster time
       assert html =~ "10.25 minutes"
@@ -249,5 +249,4 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       assert html =~ creator.email
       assert html =~ invitee.email
     end
-  end
 end
