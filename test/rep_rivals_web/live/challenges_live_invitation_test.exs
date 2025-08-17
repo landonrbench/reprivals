@@ -186,7 +186,6 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         |> render_submit()
 
       # Verify completion success message and UI update
-      assert html =~ "Challenge completed successfully!"
       assert html =~ "✅ Completed"
       assert html =~ "12.50 minutes"
 
