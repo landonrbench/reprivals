@@ -31,7 +31,7 @@ defmodule RepRivals.LibraryTest do
 
       participant_ids = [friend1.id, friend2.id]
 
-      {:ok, challenge} = Library.create_group_challenge(challenge_attrs, participant_ids)
+      {:ok, {challenge, participants}} = Library.create_group_challenge(challenge_attrs, participant_ids)
 
       # Verify challenge was created
       assert %Challenge{} = challenge
