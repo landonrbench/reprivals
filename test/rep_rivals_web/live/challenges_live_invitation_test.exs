@@ -76,7 +76,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Verify the challenge invitation is displayed
       assert html =~ challenge.name
       assert html =~ workout.name
-      assert html =~ "🟡 Invited"
+      assert html =~ "⏳ Invited"
       assert html =~ "Accept Challenge"
     end
 
@@ -101,7 +101,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html =
         view
         |> element(
-          "button[phx-click='accept_challenge'][phx-value-participant_id='#{participant.id}']"
+          "button[phx-click='accept_challenge'][phx-value-id='#{participant.id}']"
         )
         |> render_click()
 
