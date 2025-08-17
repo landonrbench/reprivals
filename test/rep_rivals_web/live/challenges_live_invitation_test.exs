@@ -140,7 +140,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html =
         view
         |> element(
-          "button[phx-click='show_complete_form'][phx-value-participant_id='#{accepted_participant.id}']"
+          "button[phx-click='show_complete_modal'][phx-value-id='accepted_participant.id']"
         )
         |> render_click()
 
@@ -171,7 +171,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
 
       view
       |> element(
-        "button[phx-click='show_complete_form'][phx-value-participant_id='#{accepted_participant.id}']"
+        "button[phx-click='show_complete_modal'][phx-value-id='accepted_participant.id']"
       )
       |> render_click()
 
