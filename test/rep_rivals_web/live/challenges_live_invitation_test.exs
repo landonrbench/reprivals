@@ -186,7 +186,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         |> render_submit()
 
       # Verify completion success message and UI update
-      assert html =~ "✅ Completed"
+      assert html =~ "🏆 Completed"
       assert html =~ "12.50 minutes"
 
       # Verify database was updated with completion
@@ -239,7 +239,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html = view |> element("button[phx-value-tab='invites']") |> render_click()
 
       # Verify leaderboard shows both participants with correct order and results
-      assert html =~ "✅ Completed"
+      assert html =~ "🏆 Completed"
       # Creator's faster time
       assert html =~ "10.25 minutes"
       # Invitee's slower time
