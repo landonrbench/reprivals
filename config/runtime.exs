@@ -28,9 +28,9 @@ if config_env() == :prod do
       For example: ecto://USER:PASS@HOST/DATABASE
       """
 
-  config :redbird, Redbird.Repo,
+  config :rep_rivals, RepRivals.Repo,
     ssl: true,
-    ssl_opts: [verify: :verify_none],
+    ssl: [verify: :verify_none],
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
 
@@ -61,6 +61,7 @@ if config_env() == :prod do
       ip: {0, 0, 0, 0, 0, 0, 0, 0},
       port: port
     ],
+    check_origin: ["https://#{host}"],
     secret_key_base: secret_key_base
 
   # ## SSL Support
@@ -100,16 +101,19 @@ if config_env() == :prod do
   # In production you need to configure the mailer to use a different adapter.
   # Also, you may need to configure the Swoosh API client of your choice if you
   # are not using SMTP. Here is an example of the configuration:
-  #
-  #     config :rep_rivals, RepRivals.Mailer,
-  #       adapter: Swoosh.Adapters.Mailgun,
-  #       api_key: System.get_env("MAILGUN_API_KEY"),
-  #       domain: System.get_env("MAILGUN_DOMAIN")
-  #
+
+  config :rep_rivals, RepRivals.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: System.get_env("SMTP_RELAY"),
+    username: System.get_env("SMTP_USER"),
+    password: System.get_env("SMTP_PASS"),
+    auth: :always,
+    tls: :always,
+    hostname: System.get_env("SMTP_HOST")
+
   # For this example you need include a HTTP client required by Swoosh API client.
   # Swoosh supports Hackney, Req and Finch out of the box:
-  #
-  #     config :swoosh, :api_client, Swoosh.ApiClient.Hackney
+  config :swoosh, :api_client, Swoosh.ApiClient.Req
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
 end

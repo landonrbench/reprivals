@@ -9,7 +9,7 @@ defmodule RepRivals.Accounts.UserNotifier do
     email =
       new()
       |> to(recipient)
-      |> from({"RepRivals", "contact@example.com"})
+      |> from({"RepRivals", "noreply@rep-rivals.com"})
       |> subject(subject)
       |> text_body(body)
 
