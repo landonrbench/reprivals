@@ -190,8 +190,8 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Verify database was updated with completion
       completed_participant = Repo.get(Library.ChallengeParticipant, accepted_participant.id)
       assert completed_participant.status == "completed"
-      assert Decimal.equal?(completed_participant.result_value, Decimal.new("12.50"))
-      assert completed_participant.result_unit == "minutes"
+      assert Decimal.equal?(completed_participant.result_value, Decimal.new("750"))
+      assert completed_participant.result_unit == "seconds"
       assert completed_participant.result_notes == "Great workout!"
       assert completed_participant.completed_at != nil
     end
