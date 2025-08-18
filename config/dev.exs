@@ -1,6 +1,7 @@
 import Config
 
 # Configure your database
+config :rep_rivals, :repo_adapter, Ecto.Adapters.SQLite3
 config :rep_rivals, RepRivals.Repo,
   database: Path.expand("../rep_rivals_dev.db", __DIR__),
   pool_size: 5,

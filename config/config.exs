@@ -22,7 +22,8 @@ config :rep_rivals, :scopes,
 
 config :rep_rivals,
   ecto_repos: [RepRivals.Repo],
-  generators: [timestamp_type: :utc_datetime]
+  generators: [timestamp_type: :utc_datetime],
+  repo_adapter: Ecto.Adapters.Postgres
 
 # Configures the endpoint
 config :rep_rivals, RepRivalsWeb.Endpoint,
