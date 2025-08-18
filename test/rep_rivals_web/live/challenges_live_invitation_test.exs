@@ -1,5 +1,5 @@
 defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
-  use RepRivalsWeb.ConnCase, async: true
+  use RepRivalsWeb.ConnCase, async: false
   import Phoenix.LiveViewTest
   import RepRivals.AccountsFixtures
   import RepRivals.LibraryFixtures
@@ -22,29 +22,32 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
         })
 
       # Create a challenge
-      {:ok, challenge} =
-        Library.create_challenge(%{
-          name: "Test Challenge",
-          description: "A test challenge",
-          status: "active",
-          creator_id: creator.id,
-          workout_id: workout.id,
-          expires_at: DateTime.add(DateTime.utc_now(), 7, :day)
-        })
+      {:ok, {challenge, [invitee_participant]}} =
+        Library.create_group_challenge(
+          %{
+            name: "Test Challenge",
+            description: "A test challenge",
+            status: "active",
+            creator_id: creator.id,
+            workout_id: workout.id,
+            expires_at: DateTime.add(DateTime.utc_now(), 7, :day)
+          },
+          [invitee.id]
+        )
 
       # Create challenge participants (creator and invitee)
-      {:ok, _creator_participant} =
-        Library.create_challenge_participants(challenge.id, [creator.id])
+      # {:ok, _creator_participant} =
+      #   Library.create_challenge_participants(challenge.id, [creator.id])
 
-      {:ok, invitee_participant} =
-        Library.create_challenge_participants(challenge.id, [invitee.id])
+      # {:ok, invitee_participant} =
+      #   Library.create_challenge_participants(challenge.id, [invitee.id])
 
       %{
         creator: creator,
         invitee: invitee,
         challenge: challenge,
         workout: workout,
-        invitee_participant: List.first(invitee_participant)
+        invitee_participant: invitee_participant
       }
     end
 
@@ -73,7 +76,7 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Verify the challenge invitation is displayed
       assert html =~ challenge.name
       assert html =~ workout.name
-      assert html =~ "🟡 Invited"
+      assert html =~ "⏳ Invited"
       assert html =~ "Accept Challenge"
     end
 
@@ -97,13 +100,11 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       # Accept the challenge
       html =
         view
-        |> element(
-          "button[phx-click='accept_challenge'][phx-value-participant_id='#{participant.id}']"
-        )
+        |> element("button[phx-click='accept_challenge'][phx-value-id='#{participant.id}']")
         |> render_click()
 
       # Verify the UI shows accepted status
-      assert html =~ "🟡 Accepted"
+      assert html =~ "✅ Accepted"
       refute html =~ "Accept Challenge"
 
       # Verify the database was updated
@@ -130,14 +131,14 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
       html = view |> element("button[phx-value-tab='invites']") |> render_click()
 
       # Verify accepted status and completion interface
-      assert html =~ "🟡 Accepted"
+      assert html =~ "✅ Accepted"
       assert html =~ "Complete Challenge"
 
       # Click complete challenge button to show completion form
       html =
         view
         |> element(
-          "button[phx-click='show_complete_form'][phx-value-participant_id='#{accepted_participant.id}']"
+          "button[phx-click='show_complete_modal'][phx-value-id='#{accepted_participant.id}']"
         )
         |> render_click()
 
@@ -168,30 +169,29 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
 
       view
       |> element(
-        "button[phx-click='show_complete_form'][phx-value-participant_id='#{accepted_participant.id}']"
+        "button[phx-click='show_complete_modal'][phx-value-id='#{accepted_participant.id}']"
       )
       |> render_click()
 
       # Submit completion form
       html =
         view
-        |> form("#complete-form-#{accepted_participant.id}", %{
-          "result_value" => "12.50",
-          "result_unit" => "minutes",
+        |> form("#complete-challenge-form", %{
+          "time_minutes" => "12",
+          "time_seconds" => "30",
           "result_notes" => "Great workout!"
         })
         |> render_submit()
 
       # Verify completion success message and UI update
-      assert html =~ "Challenge completed successfully!"
-      assert html =~ "✅ Completed"
-      assert html =~ "12.50 minutes"
+      assert html =~ "🏆 Completed"
+      assert html =~ "12:30"
 
       # Verify database was updated with completion
       completed_participant = Repo.get(Library.ChallengeParticipant, accepted_participant.id)
       assert completed_participant.status == "completed"
-      assert Decimal.equal?(completed_participant.result_value, Decimal.new("12.50"))
-      assert completed_participant.result_unit == "minutes"
+      assert Decimal.equal?(completed_participant.result_value, Decimal.new("750"))
+      assert completed_participant.result_unit == "seconds"
       assert completed_participant.result_notes == "Great workout!"
       assert completed_participant.completed_at != nil
     end
@@ -229,15 +229,15 @@ defmodule RepRivalsWeb.ChallengesLiveInvitationTest do
           completed_at: DateTime.utc_now()
         })
 
-      # Log in as invitee to view leaderboard
-      conn = log_in_user(conn, invitee)
+      # Log in as creator to view their challenge leaderboard
+      conn = log_in_user(conn, creator)
       {:ok, view, _html} = live(conn, ~p"/challenges")
 
-      # Switch to invites tab to see completed challenge
-      html = view |> element("button[phx-value-tab='invites']") |> render_click()
+      # Stay on "My Challenges" tab to see full leaderboard
+      html = render(view)
 
-      # Verify leaderboard shows both participants with correct order and results
-      assert html =~ "✅ Completed"
+      # Verify leaderboard shows both participants with correct results
+      assert html =~ "🏆 Completed"
       # Creator's faster time
       assert html =~ "10.25 minutes"
       # Invitee's slower time

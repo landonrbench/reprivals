@@ -653,7 +653,7 @@ defmodule RepRivals.Library do
                      participant_user_ids,
                      "invited"
                    ) do
-                {:ok, _participants} -> challenge
+                {:ok, participants} -> {challenge, participants}
                 {:error, error} -> Repo.rollback(error)
               end
 

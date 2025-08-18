@@ -1,5 +1,5 @@
 defmodule RepRivalsWeb.ErrorJSONTest do
-  use RepRivalsWeb.ConnCase, async: true
+  use RepRivalsWeb.ConnCase, async: false
 
   test "renders 404" do
     assert RepRivalsWeb.ErrorJSON.render("404.json", %{}) == %{errors: %{detail: "Not Found"}}

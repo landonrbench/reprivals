@@ -5,11 +5,10 @@ defmodule RepRivalsWeb.FriendsLive do
 
   @impl true
   def mount(_params, _session, socket) do
-    user_id = socket.assigns.current_scope.user.id
-
-    friends = Accounts.list_friends(user_id)
-    pending_requests = Accounts.list_pending_friend_requests(user_id)
-    sent_requests = Accounts.list_sent_friend_requests(user_id)
+    scope = socket.assigns.current_scope
+    friends = Accounts.list_friends(scope)
+    pending_requests = Accounts.list_pending_friend_requests(scope)
+    sent_requests = Accounts.list_sent_friend_requests(scope)
 
     {:ok,
      socket
@@ -41,8 +40,8 @@ defmodule RepRivalsWeb.FriendsLive do
 
   @impl true
   def handle_event("send_request", %{"email" => email}, socket) do
-    current_user = socket.assigns.current_scope.user
-    current_user_email = current_user.email
+    scope = socket.assigns.current_scope
+    current_user_email = scope.user.email
 
     case String.trim(email) do
       "" ->
@@ -52,23 +51,23 @@ defmodule RepRivalsWeb.FriendsLive do
         {:noreply, put_flash(socket, :error, "You can't add yourself as a friend!")}
 
       email ->
-        case Accounts.find_user_by_email(email) do
+        case Accounts.get_user_by_email(email) do
           nil ->
             {:noreply, put_flash(socket, :error, "User not found with email: #{email}")}
 
           friend ->
-            if Accounts.friendship_exists?(current_user.id, friend.id) do
+            if Accounts.friendship_exists?(scope.user.id, friend.id) do
               {:noreply,
                put_flash(
                  socket,
                  :error,
-                 "Friend request already exists or you're already friends"
+                 "Friend request already exists or you're already friends with "
                )}
             else
-              case Accounts.send_friend_request(current_user.id, friend.id) do
+              case Accounts.send_friend_request(scope, friend.id) do
                 {:ok, _friendship} ->
                   # Refresh sent requests
-                  sent_requests = Accounts.list_sent_friend_requests(current_user.id)
+                  sent_requests = Accounts.list_sent_friend_requests(scope)
 
                   {:noreply,
                    socket
@@ -87,15 +86,14 @@ defmodule RepRivalsWeb.FriendsLive do
 
   @impl true
   def handle_event("accept_request", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
     friendship = Accounts.get_friendship!(id)
 
-    case Accounts.accept_friend_request(friendship) do
+    case Accounts.accept_friend_request(scope, friendship) do
       {:ok, _friendship} ->
-        user_id = socket.assigns.current_scope.user.id
-
         # Refresh all friend data
-        friends = Accounts.list_friends(user_id)
-        pending_requests = Accounts.list_pending_friend_requests(user_id)
+        friends = Accounts.list_friends(scope)
+        pending_requests = Accounts.list_pending_friend_requests(scope)
 
         {:noreply,
          socket
@@ -111,12 +109,12 @@ defmodule RepRivalsWeb.FriendsLive do
 
   @impl true
   def handle_event("decline_request", %{"id" => id}, socket) do
+    scope = socket.assigns.current_scope
     friendship = Accounts.get_friendship!(id)
 
-    case Accounts.decline_friend_request(friendship) do
+    case Accounts.decline_friend_request(scope, friendship) do
       {:ok, _friendship} ->
-        user_id = socket.assigns.current_scope.user.id
-        pending_requests = Accounts.list_pending_friend_requests(user_id)
+        pending_requests = Accounts.list_pending_friend_requests(scope)
 
         {:noreply,
          socket

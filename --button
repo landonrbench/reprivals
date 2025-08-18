@@ -1,0 +1,30 @@
+==========================
+http://localhost:4000/users/log-in
+==========================
+
+- [Register](/users/register)
+- [Log in](/users/log-in)
+
+Log in
+
+==========
+
+Don't have an account? [Sign up](/users/register) for an account now.
+
+You are running the local mail adapter.
+
+To see sent emails, visit [the mailbox page](/dev/mailbox).
+
+Email 
+
+Log in with email →
+
+or
+
+Email 
+
+Password 
+
+Log in and stay logged in → Log in only this time
+
+You must log in to access this page.

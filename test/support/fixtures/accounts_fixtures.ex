@@ -52,7 +52,7 @@ defmodule RepRivals.AccountsFixtures do
   end
 
   def set_password(user) do
-    {:ok, user, _expired_tokens} =
+    {:ok, {user, _expired_tokens}} =
       Accounts.update_user_password(user, %{password: valid_user_password()})
 
     user

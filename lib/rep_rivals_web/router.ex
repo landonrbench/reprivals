@@ -17,22 +17,7 @@ defmodule RepRivalsWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", RepRivalsWeb do
-    pipe_through :browser
-
-    live_session :current_user,
-      on_mount: [{RepRivalsWeb.UserAuth, :mount_current_scope}] do
-      live "/users/register", UserLive.Registration, :new
-      live "/users/log-in", UserLive.Login, :new
-      live "/users/log-in/:token", UserLive.Confirmation, :new
-      live "/users/confirm/:token", UserLive.Confirmation, :edit
-      live "/users/reset-password", UserLive.ForgotPassword, :new
-      live "/users/reset-password/:token", UserLive.ResetPassword, :edit
-    end
-
-    post "/users/log-in", UserSessionController, :create
-    delete "/users/log-out", UserSessionController, :delete
-  end
+  ## Authentication routes
 
   scope "/", RepRivalsWeb do
     pipe_through [:browser, :require_authenticated_user]
@@ -54,10 +39,19 @@ defmodule RepRivalsWeb.Router do
     post "/users/update-password", UserSessionController, :update_password
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", RepRivalsWeb do
-  #   pipe_through :api
-  # end
+  scope "/", RepRivalsWeb do
+    pipe_through [:browser]
+
+    live_session :current_user,
+      on_mount: [{RepRivalsWeb.UserAuth, :mount_current_scope}] do
+      live "/users/register", UserLive.Registration, :new
+      live "/users/log-in", UserLive.Login, :new
+      live "/users/log-in/:token", UserLive.Confirmation, :new
+    end
+
+    post "/users/log-in", UserSessionController, :create
+    delete "/users/log-out", UserSessionController, :delete
+  end
 
   # Enable LiveDashboard and Swoosh mailbox preview in development
   if Application.compile_env(:rep_rivals, :dev_routes) do

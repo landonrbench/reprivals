@@ -119,7 +119,7 @@ defmodule RepRivalsWeb.UserAuth do
   end
 
   # Do not renew session if the user is already logged in
-  # to prevent CSRF errors or data being last in tabs that are still open
+  # to prevent CSRF errors or data being lost in tabs that are still open
   defp renew_session(conn, user) when conn.assigns.current_scope.user.id == user.id do
     conn
   end
