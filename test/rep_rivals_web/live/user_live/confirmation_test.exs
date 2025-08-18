@@ -53,9 +53,10 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
       assert get_session(conn, :user_token)
       assert redirected_to(conn) == ~p"/"
 
-      # log out, new conn
+      # log out, new conn, and try to use the same token again
       conn = build_conn()
 
+      # This should redirect to login with error message
       {:ok, _lv, html} =
         live(conn, ~p"/users/log-in/#{token}")
         |> follow_redirect(conn, ~p"/users/log-in")
@@ -84,9 +85,10 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
 
       assert Accounts.get_user!(user.id).confirmed_at == user.confirmed_at
 
-      # log out, new conn
+      # log out, new conn, and try to use the same token again
       conn = build_conn()
 
+      # This should redirect to login with error message
       {:ok, _lv, html} =
         live(conn, ~p"/users/log-in/#{token}")
         |> follow_redirect(conn, ~p"/users/log-in")
@@ -95,6 +97,7 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
     end
 
     test "raises error for invalid token", %{conn: conn} do
+      # This should redirect to login with error message
       {:ok, _lv, html} =
         live(conn, ~p"/users/log-in/invalid-token")
         |> follow_redirect(conn, ~p"/users/log-in")
