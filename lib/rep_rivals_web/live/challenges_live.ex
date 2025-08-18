@@ -195,11 +195,8 @@ defmodule RepRivalsWeb.ChallengesLive do
         "For Time" ->
           minutes = String.to_integer(params["time_minutes"] || "0")
           seconds = String.to_integer(params["time_seconds"] || "0")
-
-          total_minutes =
-            Decimal.new(minutes) + Decimal.div(Decimal.new(seconds), Decimal.new(60))
-
-          {total_minutes, "minutes"}
+          total_seconds = minutes * 60 + seconds
+          {Decimal.new(total_seconds), "seconds"}
 
         "For Reps" ->
           reps = String.to_integer(params["result_value"] || "0")
@@ -300,9 +297,9 @@ defmodule RepRivalsWeb.ChallengesLive do
     "No result"
   end
 
-  # Updated to handle "minutes" as decimal and format to MM:SS
-  defp format_result_with_unit(result_value, "minutes") do
-    total_seconds = Decimal.to_integer(Decimal.mult(result_value, Decimal.new(60)))
+  # Updated to handle total seconds and format to MM:SS
+  defp format_result_with_unit(result_value, "seconds") do
+    total_seconds = Decimal.to_integer(result_value)
     minutes = div(total_seconds, 60)
     seconds = rem(total_seconds, 60)
     "#{minutes}:#{String.pad_leading(Integer.to_string(seconds), 2, "0")}"
