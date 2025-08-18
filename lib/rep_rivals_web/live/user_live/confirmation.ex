@@ -88,7 +88,7 @@ defmodule RepRivalsWeb.UserLive.Confirmation do
       {:ok,
        socket
        |> put_flash(:error, "Magic link is invalid or has expired.")
-       |> redirect(to: ~p"/users/register")}
+       |> redirect(to: ~p"/users/log-in")}
     end
   end
 
