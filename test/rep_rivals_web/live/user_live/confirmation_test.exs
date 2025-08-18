@@ -58,7 +58,8 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
 
       # This should redirect to login with error message
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
+        conn
+        |> live(~p"/users/log-in/#{token}")
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or has expired."
@@ -90,7 +91,8 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
 
       # This should redirect to login with error message
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/#{token}")
+        conn
+        |> live(~p"/users/log-in/#{token}")
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or has expired."
@@ -99,7 +101,8 @@ defmodule RepRivalsWeb.UserLive.ConfirmationTest do
     test "raises error for invalid token", %{conn: conn} do
       # This should redirect to login with error message
       {:ok, _lv, html} =
-        live(conn, ~p"/users/log-in/invalid-token")
+        conn
+        |> live(~p"/users/log-in/invalid-token")
         |> follow_redirect(conn, ~p"/users/log-in")
 
       assert html =~ "Magic link is invalid or has expired."
