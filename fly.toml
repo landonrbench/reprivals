@@ -9,9 +9,6 @@ kill_signal = 'SIGTERM'
 
 [build]
 
-[deploy]
-  release_command = '/app/bin/migrate'
-
 [env]
   PHX_HOST = 'reprivals.fly.dev'
   PORT = '8080'
@@ -21,7 +18,7 @@ kill_signal = 'SIGTERM'
   force_https = true
   auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ['app']
 
   [http_service.concurrency]
@@ -33,3 +30,7 @@ kill_signal = 'SIGTERM'
   memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+
+[mounts]
+  source = 'reprivals_data'
+  destination = '/data'

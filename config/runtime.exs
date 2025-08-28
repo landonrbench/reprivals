@@ -21,18 +21,25 @@ if System.get_env("PHX_SERVER") do
 end
 
 if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise """
-      environment variable DATABASE_URL is missing.
-      For example: ecto://USER:PASS@HOST/DATABASE
-      """
+  # database_url =
+  #   System.get_env("DATABASE_URL") ||
+  #     raise """
+  #     environment variable DATABASE_URL is missing.
+  #     For example: ecto://USER:PASS@HOST/DATABASE
+  #     """
+  #
+  # config :rep_rivals, RepRivals.Repo,
+  #   ssl: true,
+  #   ssl: [verify: :verify_none],
+  #   url: database_url,
+  #   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
 
+  config :rep_rivals, :repo_adapter, Ecto.Adapters.SQLite3
   config :rep_rivals, RepRivals.Repo,
-    ssl: true,
-    ssl: [verify: :verify_none],
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "5")
+    database: "/data/rep_rivals.db",
+    pool_size: 5,
+    stacktrace: true,
+    show_sensitive_data_on_connection_error: true
 
   # The secret key base is used to sign/encrypt cookies and other secrets.
   # A default value is used in config/dev.exs and config/test.exs but you
@@ -58,7 +65,7 @@ if config_env() == :prod do
       # Set it to  {0, 0, 0, 0, 0, 0, 0, 1} for local network only access.
       # See the documentation on https://hexdocs.pm/bandit/Bandit.html#t:options/0
       # for details about using IPv6 vs IPv4 and loopback vs public addresses.
-      ip: {0, 0, 0, 0},
+      ip: {0, 0, 0, 0, 0, 0, 0 ,0},
       port: port
     ],
     check_origin: ["https://#{host}"],
@@ -96,24 +103,32 @@ if config_env() == :prod do
   #
   # Check `Plug.SSL` for all available options in `force_ssl`.
 
-  # ## Configuring the mailer
-  #
-  # In production you need to configure the mailer to use a different adapter.
-  # Also, you may need to configure the Swoosh API client of your choice if you
-  # are not using SMTP. Here is an example of the configuration:
-
-  config :rep_rivals, RepRivals.Mailer,
-    adapter: Swoosh.Adapters.SMTP,
-    relay: System.get_env("SMTP_RELAY"),
-    username: System.get_env("SMTP_USER"),
-    password: System.get_env("SMTP_PASS"),
-    auth: :always,
-    tls: :always,
-    hostname: System.get_env("SMTP_HOST")
 
   # For this example you need include a HTTP client required by Swoosh API client.
   # Swoosh supports Hackney, Req and Finch out of the box:
   config :swoosh, :api_client, Swoosh.ApiClient.Req
   #
   # See https://hexdocs.pm/swoosh/Swoosh.html#module-installation for details.
+
+  ## Configuring the mailer
+  # this is a required config for AWS SES...
+  # found it here: https://github.com/swoosh/swoosh/issues/785#issuecomment-2379214324
+  smtp_relay = System.get_env("SMTP_RELAY")
+  config :rep_rivals, RepRivals.Mailer,
+    adapter: Swoosh.Adapters.SMTP,
+    relay: smtp_relay,
+    username: System.get_env("SMTP_USER"),
+    password: System.get_env("SMTP_PASS"),
+    auth: :always,
+    ssl: false,
+    tls: :always,
+    tls_options: [
+      depth: 99,
+      verify: :verify_peer,
+      cacerts: :public_key.cacerts_get(),
+      # required settings
+      server_name_indication: String.to_charlist(smtp_relay),
+      middlebox_comp_mode: false,
+    ],
+    hostname: System.get_env("SMTP_HOST")
 end
